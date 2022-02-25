@@ -1,8 +1,11 @@
 #include "SDL/include/SDL.h"
-#pragma comment( lib, "SDL/libx86/SDL2.lib" )
-#pragma comment( lib, "SDL/libx86/SDL2main.lib" )
+
 #include <stdio.h>
 #include <iostream>
+
+#pragma comment(lib, "SDL/libx86/SDL2.lib")
+#pragma comment(lib, "SDL/libx86/SDL2main.lib")
+
 using namespace std;
 
 #define WINDOW_WIDTH	640
@@ -13,10 +16,14 @@ public:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Surface* window_surface;
+	SDL_Rect* rect[];
 
 	void startSDLInitializer() {
+		char windowName[64];
+		cout << "Input window name: " << endl;
+		cin >> windowName;
 		initSDL();
-		windowInitializer();
+		windowInitializer(windowName);
 		surfaceInitializer();
 		createRenderer();
 	}
@@ -27,8 +34,9 @@ public:
 		}
 	}
 
-	void windowInitializer() {
-		window = SDL_CreateWindow("SDL START Window",
+	void windowInitializer(char* windowName) {
+		
+		window = SDL_CreateWindow(windowName,
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			WINDOW_WIDTH,
@@ -54,8 +62,8 @@ public:
 			SDL_Log("Unable to create rendering context. Reason: %s", SDL_GetError());
 		}
 	}
-
 };
+
 int main(int argc, char** argv) {
 	SDLInitializer sdlInit;
 
