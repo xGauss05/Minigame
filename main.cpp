@@ -11,7 +11,7 @@ using namespace std;
 #define WINDOW_WIDTH	640
 #define WINDOW_HEIGHT	480
 
-class SDLInitializer {
+class SDLManager {
 public:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
@@ -29,14 +29,14 @@ public:
 	}
 
 	void initSDL() {
-		if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+		if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 			SDL_Log("Unable to initialize SDL. Reason: %s", SDL_GetError());
 		}
 	}
 
 	void windowInitializer(char* windowName) {
-		
-		window = SDL_CreateWindow(windowName,
+
+		window = SDL_CreateWindow("Tests",
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
 			WINDOW_WIDTH,
@@ -62,31 +62,50 @@ public:
 			SDL_Log("Unable to create rendering context. Reason: %s", SDL_GetError());
 		}
 	}
+	
+	void updateBackground() {
+		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+		SDL_RenderClear(renderer); // Used to update the screen while clearing unnecesary objects
+	}
+
+	void updateFigure(SDL_Rect rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+		SDL_SetRenderDrawColor(renderer, r, g, b, a); // Prepares the renderer to paint with a color
+		SDL_RenderFillRect(renderer, &rect); // Paints rect with the color previously assigned
+	}
+
 };
 
 int main(int argc, char** argv) {
-	SDLInitializer sdlInit;
+	SDLManager sdlManager;
 
-	sdlInit.startSDLInitializer();
-	
-	SDL_Rect rect;
-	rect.x = 50;
-	rect.y = 50;
-	rect.w = 50;
-	rect.h = 50;
+	sdlManager.startSDLInitializer();
 
-	SDL_SetRenderDrawColor(sdlInit.renderer, 255, 0, 0, 255);
-	SDL_RenderClear(sdlInit.renderer);
+	SDL_Rect rect = { 0,430,50,50 }; // x, y, width, height
+	SDL_Rect bullet;
 
+	bool bulletShot = false;
 	bool keep_window_open = true;
 	while (keep_window_open) {
-		// Actualiza el fondo a color rojo
-		/*SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-		SDL_RenderClear(renderer);*/
-
-		// Actualiza el color del cuadrado
-		SDL_SetRenderDrawColor(sdlInit.renderer, 0, 0, 255, 255);
-		SDL_RenderFillRect(sdlInit.renderer, &rect);
+		// Red background
+		sdlManager.updateBackground();
+		// Blue square
+		sdlManager.updateFigure(rect, 0, 0, 255, 255);
+		if (bulletShot) { // If spacebar is pressed
+			bullet.x = rect.x + 75;
+			bullet.y = rect.y + 20;
+			bullet.w = 75;
+			bullet.h = 10;
+			while (bullet.x <= WINDOW_WIDTH) {
+				sdlManager.updateFigure(rect, 0,0,255,255);
+				sdlManager.updateFigure(bullet, 0, 255, 0, 255);
+				SDL_RenderPresent(sdlManager.renderer);
+				bullet.x += 35;
+				SDL_Delay(50);
+				sdlManager.updateBackground();
+			}
+			bulletShot = false;
+		}
+		SDL_RenderPresent(sdlManager.renderer); // Updates the screen with any rendering process previously called
 		SDL_Event e;
 		while (SDL_PollEvent(&e) > 0) {
 			switch (e.type) {
@@ -97,9 +116,7 @@ int main(int argc, char** argv) {
 				//cout << "Key down detected!" << endl;
 				switch (e.key.keysym.sym) {
 				case SDLK_SPACE:
-					// Repaint background to red
-					SDL_SetRenderDrawColor(sdlInit.renderer, 255, 0, 0, 255);
-					SDL_RenderClear(sdlInit.renderer);
+					bulletShot = true;
 					break;
 				case SDLK_ESCAPE:
 					keep_window_open = false;
@@ -116,19 +133,13 @@ int main(int argc, char** argv) {
 				case SDLK_DOWN:
 					rect.y += 10;
 					break;
-				default:
-					break;
 				}
-				SDL_RenderPresent(sdlInit.renderer);
 				break;
 			case SDL_KEYUP:
 				//cout << "Key up detected!" << endl;
 				break;
 			}
-			SDL_UpdateWindowSurface(sdlInit.window);
 		}
-		SDL_RenderPresent(sdlInit.renderer);
 	}
-
 	return 0;
 }
