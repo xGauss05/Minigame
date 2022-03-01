@@ -16,12 +16,11 @@ public:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Surface* window_surface;
-	SDL_Rect* rect[];
-
-	void startSDLInitializer() {
+	
+	void initializer() {
 		char windowName[64];
-		cout << "Input window name: " << endl;
-		cin >> windowName;
+		/*cout << "Input window name: " << endl;
+		cin >> windowName;*/
 		initSDL();
 		windowInitializer(windowName);
 		surfaceInitializer();
@@ -35,7 +34,6 @@ public:
 	}
 
 	void windowInitializer(char* windowName) {
-
 		window = SDL_CreateWindow("Tests",
 			SDL_WINDOWPOS_CENTERED,
 			SDL_WINDOWPOS_CENTERED,
@@ -53,7 +51,7 @@ public:
 		if (!window_surface) {
 			SDL_Log("Unable to create window surface. Reason: %s", SDL_GetError());
 		}
-		SDL_UpdateWindowSurface(window);
+		//SDL_UpdateWindowSurface(window);
 	}
 
 	void createRenderer() {
@@ -62,9 +60,9 @@ public:
 			SDL_Log("Unable to create rendering context. Reason: %s", SDL_GetError());
 		}
 	}
-	
-	void updateBackground() {
-		SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+
+	void updateBackground(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+		SDL_SetRenderDrawColor(renderer, r, g, b, a);
 		SDL_RenderClear(renderer); // Used to update the screen while clearing unnecesary objects
 	}
 
@@ -78,30 +76,27 @@ public:
 int main(int argc, char** argv) {
 	SDLManager sdlManager;
 
-	sdlManager.startSDLInitializer();
+	sdlManager.initializer();
 
-	SDL_Rect rect = { 0,430,50,50 }; // x, y, width, height
+	SDL_Rect blueSquare = { 0,430,50,50 }; // x, y, width, height
 	SDL_Rect bullet;
 
 	bool bulletShot = false;
 	bool keep_window_open = true;
 	while (keep_window_open) {
 		// Red background
-		sdlManager.updateBackground();
+		sdlManager.updateBackground(255, 0, 0, 255);
 		// Blue square
-		sdlManager.updateFigure(rect, 0, 0, 255, 255);
+		sdlManager.updateFigure(blueSquare, 0, 0, 255, 255);
 		if (bulletShot) { // If spacebar is pressed
-			bullet.x = rect.x + 75;
-			bullet.y = rect.y + 20;
-			bullet.w = 75;
-			bullet.h = 10;
-			while (bullet.x <= WINDOW_WIDTH) {
-				sdlManager.updateFigure(rect, 0,0,255,255);
+			bullet = { blueSquare.x + 75 , blueSquare.y + 20, 75, 10 };
+			while (bullet.x <= WINDOW_WIDTH) { // Until the bullet reaches the width of the window
+				sdlManager.updateFigure(blueSquare, 0, 0, 255, 255);
 				sdlManager.updateFigure(bullet, 0, 255, 0, 255);
 				SDL_RenderPresent(sdlManager.renderer);
-				bullet.x += 35;
-				SDL_Delay(50);
-				sdlManager.updateBackground();
+				bullet.x += 25;
+				sdlManager.updateBackground(255, 0, 0, 255);
+				SDL_Delay(7);
 			}
 			bulletShot = false;
 		}
@@ -122,22 +117,22 @@ int main(int argc, char** argv) {
 					keep_window_open = false;
 					break;
 				case SDLK_LEFT:
-					rect.x -= 10;
+					blueSquare.x -= 10;
 					break;
 				case SDLK_RIGHT:
-					rect.x += 10;
+					blueSquare.x += 10;
 					break;
 				case SDLK_UP:
-					rect.y -= 10;
+					blueSquare.y -= 10;
 					break;
 				case SDLK_DOWN:
-					rect.y += 10;
+					blueSquare.y += 10;
 					break;
 				}
 				break;
-			case SDL_KEYUP:
-				//cout << "Key up detected!" << endl;
-				break;
+			//case SDL_KEYUP:
+			//	cout << "Key up detected!" << endl;
+			//	break;
 			}
 		}
 	}
