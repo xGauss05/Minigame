@@ -1,38 +1,40 @@
 #pragma once
 
-#ifndef MANAGER_H
-#define MANAGER_H
-
-#include "manager.h"
 #include "SDL/include/SDL.h"
+#include "SDL_image/include/SDL_image.h"
+#pragma comment( lib, "SDL/libx86/SDL2.lib" )
+#pragma comment( lib, "SDL/libx86/SDL2main.lib" )
+#pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
 
-#pragma comment(lib, "SDL/libx86/SDL2.lib")
-#pragma comment(lib, "SDL/libx86/SDL2main.lib")
+#include "entity.h"
 
-#define WINDOW_WIDTH	640
-#define WINDOW_HEIGHT	480
+#define WINDOW_WIDTH	1024
+#define WINDOW_HEIGHT	768
+#define MAX_KEYS		256
+#define MAX_SHOTS		32
 
-class SDLManager {
+class Manager {
+public:
+	Manager();
+	~Manager();
+
+	bool init();
+	bool loadTextures();
+	void release();
+
+	bool input();
+	bool update();
+	void draw();
+
 private:
 	SDL_Window* window;
-	SDL_Surface* window_surface;
-
-public:
-	SDLManager();
-	~SDLManager();
 	SDL_Renderer* renderer;
-	void initializer();
+	SDL_Texture* background_img, * player_img, * shot_img;
 
-	void initSDL();
+	Entity player, Shots[MAX_SHOTS];
+	Entity background;
+	int idx_shot;
 
-	void windowInitializer(char* windowName);
-
-	void surfaceInitializer();
-
-	void createRenderer();
-
-	void updateBackground(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
-
-	void updateFigure(SDL_Rect rect, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+	enum KEY_STATE { KEY_IDLE, KEY_DOWN, KEY_REPEAT, KEY_UP };
+	KEY_STATE keys[MAX_KEYS];
 };
-#endif
