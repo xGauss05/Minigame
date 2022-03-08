@@ -2,9 +2,11 @@
 
 #include "SDL/include/SDL.h"
 #include "SDL_image/include/SDL_image.h"
+#include "SDL_mixer/include/SDL_mixer.h"
 #pragma comment( lib, "SDL/libx86/SDL2.lib" )
 #pragma comment( lib, "SDL/libx86/SDL2main.lib" )
 #pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
+#pragma comment( lib, "SDL_mixer/libx86/SDL2_mixer.lib" )
 
 #include "entity.h"
 
@@ -19,6 +21,7 @@ public:
 	~Manager();
 
 	bool init();
+	bool loadSounds();
 	bool loadTextures();
 	void release();
 
@@ -30,6 +33,8 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Texture* background_img, * player_img, * shot_img;
+	Mix_Music* music;
+	Mix_Chunk* shot_sfx, *sound1, *sound2;
 
 	Entity player, Shots[MAX_SHOTS];
 	Entity background;
