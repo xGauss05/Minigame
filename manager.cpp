@@ -1,10 +1,14 @@
 #include "manager.h"
 #include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
 Manager::Manager() {}
 Manager::~Manager() {}
 
 bool Manager::init() {
+	srand(time(NULL));
+
 	// Initialize SDL with all subsystems
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
 		SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
@@ -38,9 +42,11 @@ bool Manager::init() {
 		return false;
 	}
 	// Init variables
-	Mix_AllocateChannels(100);
+
 	player.init(20, WINDOW_HEIGHT >> 1, 104, 82, 5);
 	idx_shot = 0;
+	enemy.init(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0, 0);
+	idx_enemyshot = 0;
 
 	return true;
 }
@@ -57,9 +63,10 @@ bool Manager::loadSounds() {
 	if (!music) {
 		SDL_Log("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
+	Mix_AllocateChannels(100);
 	//Mix_PlayMusic(music,-1);
 	shot_sfx = Mix_LoadWAV("sounds/sfx/128.wav");
-	//sound1 = Mix_LoadWAV("sounds/sfx/137.wav");
+	oof_sfx = Mix_LoadWAV("sounds/sfx/oof.wav");
 	//sound2 = Mix_LoadWAV("sounds/sfx/182.wav");
 	return true;
 }
@@ -71,8 +78,8 @@ bool Manager::loadTextures() {
 		SDL_Log("IMG_Init: Failed to init required jpg and png support!\n");
 		SDL_Log("IMG_Init: %s\n", IMG_GetError());
 	}
-	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("background.png"));
 
+	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("smile.png"));
 	if (background_img == NULL) {
 		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
 		return false;
@@ -86,6 +93,12 @@ bool Manager::loadTextures() {
 
 	shot_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("shot.png"));
 	if (shot_img == NULL) {
+		SDL_Log("Couldn't load texture for shot_img: %s", SDL_GetError());
+		return false;
+	}
+
+	enemyshot_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("enemyshot.png"));
+	if (enemyshot_img == NULL) {
 		SDL_Log("Couldn't load texture for shot_img: %s", SDL_GetError());
 		return false;
 	}
@@ -135,35 +148,73 @@ bool Manager::update() {
 	int fx = 0, fy = 0;
 	if (keys[SDL_SCANCODE_ESCAPE] == KEY_DOWN)	return true;
 	if (keys[SDL_SCANCODE_UP] == KEY_REPEAT) {
-		fy = -1;
+		if (player.getY() >= 0) {
+			fy = -1;
+		}
 	}
 	if (keys[SDL_SCANCODE_DOWN] == KEY_REPEAT) {
-		fy = 1;
+
+		if (player.getY() <= WINDOW_HEIGHT - player.getHeight()) {
+			fy = 1;
+		}
 	}
-	if (keys[SDL_SCANCODE_LEFT] == KEY_REPEAT)	fx = -1;
-	if (keys[SDL_SCANCODE_RIGHT] == KEY_REPEAT)	fx = 1;
+	if (keys[SDL_SCANCODE_LEFT] == KEY_REPEAT) {
+		if (player.getX() >= 0) {
+			fx = -1;
+		}
+	}
+	if (keys[SDL_SCANCODE_RIGHT] == KEY_REPEAT) {
+		if (player.getX() <= WINDOW_WIDTH - player.getWidth()) {
+			fx = 1;
+		}
+	}
 	if (keys[SDL_SCANCODE_SPACE] == KEY_DOWN) {
 		int x, y, w, h;
 		player.getRect(&x, &y, &w, &h);
-		Shots[idx_shot].init(x + 29, y + 3, 56, 20, 10);
+		playerShots[idx_shot].init(x + 29, y + 3, 56, 20, 10);
 		idx_shot++;
-
-		Shots[idx_shot].init(x + 29, y + 59, 56, 20, 10);
-		Mix_PlayChannel(-1, shot_sfx, 0);
-		//Mix_PlayChannel(-1, sound1, 0);
-		//Mix_PlayChannel(-1, sound2, 0);
+		playerShots[idx_shot].init(x + 29, y + 59, 56, 20, 10);
 		idx_shot++;
 		idx_shot %= MAX_SHOTS;
+
+		Mix_PlayChannel(-1, shot_sfx, 0);
+		
+		//Mix_PlayChannel(-1, sound2, 0);
 	}
+	if ((rand() % (100 - 0 + 1) + 0) <= 15) {
+		if (!enemyShots[idx_enemyshot].isAlive()) {
+			enemyShots[idx_enemyshot].init(WINDOW_WIDTH, rand() % (WINDOW_HEIGHT - 82 + 1) + 82, 56, 20, 5);
+			idx_enemyshot++;
+			idx_enemyshot %= MAX_ENEMY_SHOTS;
+		}
+	}
+
 
 	// Logic
 	// Player update
 	player.move(fx, fy);
 	// Shots update
 	for (int i = 0; i < MAX_SHOTS; ++i) {
-		if (Shots[i].isAlive()) {
-			Shots[i].move(1, 0);
-			if (Shots[i].getX() > WINDOW_WIDTH)	Shots[i].shutDown();
+		if (playerShots[i].isAlive()) {
+			playerShots[i].move(1, 0);
+			if (playerShots[i].getX() > WINDOW_WIDTH) {
+				playerShots[i].shutDown();
+			}
+		}
+	}
+
+	SDL_Rect player_rect;
+	SDL_Rect bullet_rect;
+	// Enemy shots update
+	for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
+		if (enemyShots[i].isAlive()) {
+			enemyShots[i].move(-1, 0);
+			player.getRect(&player_rect.x, &player_rect.y, &player_rect.w, &player_rect.h);
+			enemyShots[i].getRect(&bullet_rect.x, &bullet_rect.y, &bullet_rect.w, &bullet_rect.h);
+			if (enemyShots[i].getX() < -enemyShots[i].getWidth() || SDL_HasIntersection(&player_rect, &bullet_rect)) {
+				enemyShots[i].shutDown();
+				Mix_PlayChannel(-1, oof_sfx, 0);
+			}
 		}
 	}
 
@@ -173,17 +224,25 @@ bool Manager::update() {
 void Manager::draw() {
 	SDL_RenderClear(renderer);
 	SDL_RenderCopy(renderer, background_img, NULL, NULL);
-	//Draw player
+	// Draw player
 	SDL_Rect rc;
 	player.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 	SDL_RenderCopy(renderer, player_img, NULL, &rc);
 
 	//Draw shots
-	SDL_SetRenderDrawColor(renderer, 192, 0, 0, 255);
+
 	for (int i = 0; i < MAX_SHOTS; ++i) {
-		if (Shots[i].isAlive()) {
-			Shots[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+		if (playerShots[i].isAlive()) {
+			playerShots[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 			SDL_RenderCopy(renderer, shot_img, NULL, &rc);
+		}
+	}
+
+	enemy.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	for (int i = 0; i < MAX_ENEMY_SHOTS; i++) {
+		if (enemyShots[i].isAlive()) {
+			enemyShots[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+			SDL_RenderCopy(renderer, enemyshot_img, NULL, &rc);
 		}
 	}
 

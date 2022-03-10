@@ -26,6 +26,18 @@ int Entity::getX() {
 	return x;
 }
 
+int Entity::getY() {
+	return y;
+}
+
+int Entity::getWidth() {
+	return width;
+}
+
+int Entity::getHeight() {
+	return height;
+}
+
 void Entity::shutDown() {
 	is_alive = false;
 }

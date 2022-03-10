@@ -2,6 +2,7 @@
 
 int main(int argc, char* args[]) {
 	Manager gameManager;
+
 	if (!gameManager.init()) {
 		return -1;
 	}
@@ -11,7 +12,6 @@ int main(int argc, char* args[]) {
 		end = gameManager.update();
 		gameManager.draw();
 	}
-
 	gameManager.release();
 	return 0;
 }
