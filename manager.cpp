@@ -140,7 +140,6 @@ bool Manager::update() {
 		if (!beats[idx_beat].isAlive()) {
 			SDL_Rect button;
 			switch ((rand() % (4 - 1 + 1)) + 1) {
-
 			case 1:
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				break;
@@ -160,6 +159,7 @@ bool Manager::update() {
 			idx_beat %= MAX_BEATS;
 		}
 	}
+
 	// Logic
 	// Beats update & input
 	for (int i = 0; i < MAX_BEATS; ++i) {
