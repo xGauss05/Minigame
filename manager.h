@@ -8,13 +8,17 @@
 #pragma comment( lib, "SDL_image/libx86/SDL2_image.lib" )
 #pragma comment( lib, "SDL_mixer/libx86/SDL2_mixer.lib" )
 
-
 #include "entity.h"
 
 #define WINDOW_WIDTH	1280
 #define WINDOW_HEIGHT	720
 #define MAX_KEYS		256
 #define MAX_BEATS		32
+
+#define COL_LEFT_X
+#define COL_DOWN_X
+#define COL_UP_X
+#define COL_RIGHT_X
 
 class Manager {
 public:
@@ -35,10 +39,10 @@ private:
 	SDL_Renderer* renderer;
 	SDL_Texture* background_img, * player_img, * beat_img;
 	Mix_Music* bgm;
-	Mix_Chunk* beat_sfx, *oof_sfx;
+	Mix_Chunk* beat_sfx, *score_sfx, *fail_sfx;
 	
 	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS];
-	int idx_beat;
+	int idx_beat, idx_lowest_beat;
 
 	enum KEY_STATE { KEY_IDLE, KEY_DOWN, KEY_REPEAT, KEY_UP };
 	KEY_STATE keys[MAX_KEYS];
