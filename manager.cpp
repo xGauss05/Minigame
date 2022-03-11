@@ -6,6 +6,13 @@
 Manager::Manager() {}
 Manager::~Manager() {}
 
+void initRect(SDL_Rect *button, int x, int y, int w, int h) {
+	button->x = x;
+	button->y = y;
+	button->w = w;
+	button->h = h;
+}
+
 bool Manager::init() {
 	srand(time(NULL));
 
@@ -40,14 +47,18 @@ bool Manager::init() {
 
 	// Init variables
 	//Mix_PlayMusic(music,-1);
-	buttonA.init(80, WINDOW_HEIGHT - 82, 104, 82, 0);
-	buttonS.init(100 + 104, WINDOW_HEIGHT - 82, 104, 82, 0);
-	buttonW.init(120 + 208, WINDOW_HEIGHT - 82, 104, 82, 0);
-	buttonD.init(140 + 312, WINDOW_HEIGHT - 82, 104, 82, 0);
+	buttonA.init(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
+	buttonS.init(BUTTON_X + BUTTON_MARGIN + BUTTON_W, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
+	buttonW.init(BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
+	buttonD.init(BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
+
+	initRect(&error_marginA, BUTTON_X, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);	
+	initRect(&error_marginS, BUTTON_X + BUTTON_MARGIN + BUTTON_W, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);	
+	initRect(&error_marginW, BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
+	initRect(&error_marginD, BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 
 	idx_beat = 0;
 	idx_lowest_beat = 0;
-
 
 	return true;
 }
@@ -65,24 +76,24 @@ bool Manager::loadSounds() {
 		SDL_Log("(Mix_LoadMus) Couldn't load 'bgm': %s\n", Mix_GetError());
 	}
 
-	
+
 	beat_sfx = Mix_LoadWAV("sounds/sfx/128.wav");
 	if (!beat_sfx) {
 		SDL_Log("(Mix_LoadWAV) Couldn't load 'beat_sfx': %s\n", Mix_GetError());
 	}
 
 	score_sfx = Mix_LoadWAV("sounds/sfx/score.wav");
-	if (!beat_sfx) {
+	if (!score_sfx) {
 		SDL_Log("(Mix_LoadWAV) Couldn't load 'score_sfx': %s\n", Mix_GetError());
 	}
 
-	fail_sfx = Mix_LoadWAV("sound/sfx/oof.wav");
-	if (!beat_sfx) {
+	fail_sfx = Mix_LoadWAV("sounds/sfx/oof.wav");
+	if (!fail_sfx) {
 		SDL_Log("(Mix_LoadWAV) Couldn't load 'fail_sfx': %s\n", Mix_GetError());
 	}
-
-	Mix_AllocateChannels(100);
 	
+	Mix_AllocateChannels(100);
+
 	return true;
 }
 
@@ -172,7 +183,7 @@ bool Manager::update() {
 				break;
 			}
 
-			beats[idx_beat].init(button.x, -82, 56, 20, 5);
+			beats[idx_beat].init(button.x, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
 			idx_beat++;
 			idx_beat %= MAX_BEATS;
 		}
@@ -182,60 +193,58 @@ bool Manager::update() {
 	// Beats update & input
 	for (int i = 0; i < MAX_BEATS; ++i) {
 		if (beats[i].isAlive()) {
+
 			beats[i].move(0, 1);
 
 			SDL_Rect button, beat;
 			beats[i].getRect(&beat.x, &beat.y, &beat.w, &beat.h);
 			if (keys[SDL_SCANCODE_Z] == KEY_DOWN || keys[SDL_SCANCODE_LEFT] == KEY_DOWN) {
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
-				if (!SDL_HasIntersection(&beat, &button)) {
+				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					// restar puntos
+					continue;
 				}
 			}
 
 			if (keys[SDL_SCANCODE_X] == KEY_DOWN || keys[SDL_SCANCODE_DOWN] == KEY_DOWN) {
 				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
-				if (!SDL_HasIntersection(&beat, &button)) {
+				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					// restar puntos
+					continue;
 				}
 			}
 
 			if (keys[SDL_SCANCODE_N] == KEY_DOWN || keys[SDL_SCANCODE_UP] == KEY_DOWN) {
 				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
-				if (!SDL_HasIntersection(&beat, &button)) {
+				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					// restar puntos
+					continue;
 				}
 			}
 
 			if (keys[SDL_SCANCODE_M] == KEY_DOWN || keys[SDL_SCANCODE_RIGHT] == KEY_DOWN) {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
-				if (!SDL_HasIntersection(&beat, &button)) {
+				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					// restar puntos
+					continue;
 				}
 			}
 
 			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
 				Mix_PlayChannel(-1, score_sfx, 0);
-				// sumar puntos
+				continue;
 			}
 
 			
 
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
-				//idx_lowest_beat++;
-				//if (idx_lowest_beat == MAX_BEATS) idx_lowest_beat %= MAX_BEATS;
-				Mix_PlayChannel(-1, fail_sfx, 0);
-				// restar puntos
+				// Mix_PlayChannel(-1, fail_sfx, 0);
 			}
 		}
 	}
