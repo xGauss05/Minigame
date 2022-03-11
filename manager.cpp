@@ -42,8 +42,11 @@ bool Manager::init() {
 	buttonS.init(40 + 104, WINDOW_HEIGHT - 82, 104, 82, 0);
 	buttonW.init(60 + 208, WINDOW_HEIGHT - 82, 104, 82, 0);
 	buttonD.init(80 + 312, WINDOW_HEIGHT - 82, 104, 82, 0);
+	score.init(WINDOW_WIDTH - 100, WINDOW_HEIGHT - 95, 90, 0, 0);
+	need_score.init(WINDOW_WIDTH - 100, 95, 90, WINDOW_HEIGHT - 95, 0);
 
 	idx_beat = 0;
+
 
 	return true;
 }
@@ -61,7 +64,7 @@ bool Manager::loadSounds() {
 		SDL_Log("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 	Mix_AllocateChannels(100);
-	//Mix_PlayMusic(music,-1);
+	Mix_PlayMusic(bgm, -1);
 	beat_sfx = Mix_LoadWAV("sounds/sfx/128.wav");
 	oof_sfx = Mix_LoadWAV("sounds/sfx/oof.wav");
 	//sound2 = Mix_LoadWAV("sounds/sfx/182.wav");
@@ -76,25 +79,25 @@ bool Manager::loadTextures() {
 		SDL_Log("IMG_Init: %s\n", IMG_GetError());
 	}
 
-	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("smile.png"));
+	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/smile.png"));
 	if (background_img == NULL) {
 		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
 		return false;
 	}
 
-	player_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("spaceship.png"));
+	player_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/spaceship.png"));
 	if (player_img == NULL) {
 		SDL_Log("Couldn't load texture for player_img: %s", SDL_GetError());
 		return false;
 	}
 
-	beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("shot.png"));
+	beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/shot.png"));
 	if (beat_img == NULL) {
-		SDL_Log("Couldn't load texture for shot_img: %s", SDL_GetError());
+		SDL_Log("Couldn't load texture for beat_img: %s", SDL_GetError());
 		return false;
 	}
 
-	SDL_Surface* surface = IMG_Load("shot.png");
+	// SDL_Surface* surface = IMG_Load("img/shot.png");
 	return true;
 }
 
@@ -185,7 +188,7 @@ bool Manager::update() {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 			}
 
-			if (SDL_HasIntersection(&beat, &button)) { 
+			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
 				Mix_PlayChannel(-1, oof_sfx, 0);
 			}
@@ -201,6 +204,7 @@ void Manager::draw() {
 
 	// Draw background
 	SDL_RenderCopy(renderer, background_img, NULL, NULL);
+
 
 	// Draw buttons
 	SDL_Rect rc;
