@@ -30,23 +30,20 @@ bool Manager::init() {
 	}
 
 	// Initialize keys array
-	for (int i = 0; i < MAX_KEYS; ++i) {
-		keys[i] = KEY_IDLE;
-	}
+	for (int i = 0; i < MAX_KEYS; ++i) keys[i] = KEY_IDLE;
 
-	if (!loadTextures()) {
-		return false;
-	}
+	if (!loadTextures()) return false;
 
-	if (!loadSounds()) {
-		return false;
-	}
+	if (!loadSounds()) return false;
+
 	// Init variables
 
-	player.init(20, WINDOW_HEIGHT >> 1, 104, 82, 5);
-	idx_shot = 0;
-	enemy.init(WINDOW_WIDTH, WINDOW_HEIGHT, 0, 0, 0);
-	idx_enemyshot = 0;
+	buttonA.init(20, WINDOW_HEIGHT - 82, 104, 82, 0);
+	buttonS.init(40 + 104, WINDOW_HEIGHT - 82, 104, 82, 0);
+	buttonW.init(60 + 208, WINDOW_HEIGHT - 82, 104, 82, 0);
+	buttonD.init(80 + 312, WINDOW_HEIGHT - 82, 104, 82, 0);
+
+	idx_beat = 0;
 
 	return true;
 }
@@ -59,13 +56,13 @@ bool Manager::loadSounds() {
 	int flags = MIX_INIT_OGG;
 	int initted = Mix_Init(flags);
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
-	music = Mix_LoadMUS("sounds/bgm/106.ogg");
-	if (!music) {
+	bgm = Mix_LoadMUS("sounds/bgm/106.ogg");
+	if (!bgm) {
 		SDL_Log("Mix_LoadWAV: %s\n", Mix_GetError());
 	}
 	Mix_AllocateChannels(100);
 	//Mix_PlayMusic(music,-1);
-	shot_sfx = Mix_LoadWAV("sounds/sfx/128.wav");
+	beat_sfx = Mix_LoadWAV("sounds/sfx/128.wav");
 	oof_sfx = Mix_LoadWAV("sounds/sfx/oof.wav");
 	//sound2 = Mix_LoadWAV("sounds/sfx/182.wav");
 	return true;
@@ -91,17 +88,12 @@ bool Manager::loadTextures() {
 		return false;
 	}
 
-	shot_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("shot.png"));
-	if (shot_img == NULL) {
+	beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("shot.png"));
+	if (beat_img == NULL) {
 		SDL_Log("Couldn't load texture for shot_img: %s", SDL_GetError());
 		return false;
 	}
 
-	enemyshot_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("enemyshot.png"));
-	if (enemyshot_img == NULL) {
-		SDL_Log("Couldn't load texture for shot_img: %s", SDL_GetError());
-		return false;
-	}
 	SDL_Surface* surface = IMG_Load("shot.png");
 	return true;
 }
@@ -109,10 +101,10 @@ bool Manager::loadTextures() {
 void Manager::release() {
 	SDL_DestroyTexture(background_img);
 	SDL_DestroyTexture(player_img);
-	SDL_DestroyTexture(shot_img);
+	SDL_DestroyTexture(beat_img);
 	IMG_Quit();
-	Mix_FreeMusic(music);
-	Mix_FreeChunk(shot_sfx);
+	Mix_FreeMusic(bgm);
+	Mix_FreeChunk(beat_sfx);
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_Quit();
@@ -140,82 +132,61 @@ bool Manager::input() {
 
 bool Manager::update() {
 	// Read Input
-	if (!input()) {
-		return true;
-	}
+	if (!input()) return true;
 
 	// Process Input
-	int fx = 0, fy = 0;
-	if (keys[SDL_SCANCODE_ESCAPE] == KEY_DOWN)	return true;
-	if (keys[SDL_SCANCODE_UP] == KEY_REPEAT) {
-		if (player.getY() >= 0) {
-			fy = -1;
-		}
-	}
-	if (keys[SDL_SCANCODE_DOWN] == KEY_REPEAT) {
-		if (player.getY() <= WINDOW_HEIGHT - player.getHeight()) {
-			fy = 1;
-		}
-	}
-	if (keys[SDL_SCANCODE_LEFT] == KEY_REPEAT) {
-		if (player.getX() >= 0) {
-			fx = -1;
-		}
-	}
-	if (keys[SDL_SCANCODE_RIGHT] == KEY_REPEAT) {
-		if (player.getX() <= WINDOW_WIDTH - player.getWidth()) {
-			fx = 1;
-		}
-	}
-	if (keys[SDL_SCANCODE_SPACE] == KEY_DOWN) {
-		int x, y, w, h;
-		player.getRect(&x, &y, &w, &h);
-		playerShots[idx_shot].init(x + 29, y + 3, 56, 20, 10);
-		idx_shot++;
-		playerShots[idx_shot].init(x + 29, y + 59, 56, 20, 10);
-		idx_shot++;
-		idx_shot %= MAX_SHOTS;
+	if (keys[SDL_SCANCODE_ESCAPE] == KEY_DOWN) return true;
+	if ((rand() % (100 - 0 + 1) + 0) <= 5) {
+		if (!beats[idx_beat].isAlive()) {
+			SDL_Rect button;
+			switch ((rand() % (4 - 1 + 1)) + 1) {
+			case 1:
+				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
+				break;
+			case 2:
+				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
+				break;
+			case 3:
+				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
+				break;
+			case 4:
+				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
+				break;
+			}
 
-		Mix_PlayChannel(-1, shot_sfx, 0);
-
-		//Mix_PlayChannel(-1, sound2, 0);
-	}
-	if ((rand() % (100 - 0 + 1) + 0) <= 15) {
-		if (!enemyShots[idx_enemyshot].isAlive()) {
-			enemyShots[idx_enemyshot].init(WINDOW_WIDTH, rand() % (WINDOW_HEIGHT - 82 + 1) + 82, 56, 20, 20);
-			idx_enemyshot++;
-			idx_enemyshot %= MAX_ENEMY_SHOTS;
+			beats[idx_beat].init(button.x, -82, 56, 20, 5);
+			idx_beat++;
+			idx_beat %= MAX_BEATS;
 		}
 	}
-
 
 	// Logic
-	// Player update
-	player.move(fx, fy);
-	// Shots update
-	for (int i = 0; i < MAX_SHOTS; ++i) {
-		if (playerShots[i].isAlive()) {
-			playerShots[i].move(1, 0);
-			if (playerShots[i].getX() > WINDOW_WIDTH) {
-				playerShots[i].shutDown();
-			}
-		}
-	}
+	// Beats update & input
+	for (int i = 0; i < MAX_BEATS; ++i) {
+		if (beats[i].isAlive()) {
+			beats[i].move(0, 1);
+			if (beats[i].getY() >= WINDOW_HEIGHT) beats[i].shutDown();
 
-	SDL_Rect player_rect;
-	SDL_Rect bullet_rect;
-	// Enemy shots update
-	for (int i = 0; i < MAX_ENEMY_SHOTS; ++i) {
-		if (enemyShots[i].isAlive()) {
-			enemyShots[i].move(-1, 0);
-			player.getRect(&player_rect.x, &player_rect.y, &player_rect.w, &player_rect.h);
-			enemyShots[i].getRect(&bullet_rect.x, &bullet_rect.y, &bullet_rect.w, &bullet_rect.h);
-			if (enemyShots[i].getX() < -enemyShots[i].getWidth()) {
-				enemyShots[i].shutDown();
-
+			SDL_Rect button, beat;
+			beats[i].getRect(&beat.x, &beat.y, &beat.w, &beat.h);
+			if (keys[SDL_SCANCODE_Z] == KEY_DOWN) {
+				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 			}
-			if (SDL_HasIntersection(&player_rect, &bullet_rect)) {
-				enemyShots[i].shutDown();
+
+			if (keys[SDL_SCANCODE_X] == KEY_DOWN) {
+				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
+			}
+
+			if (keys[SDL_SCANCODE_N] == KEY_DOWN) {
+				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
+			}
+
+			if (keys[SDL_SCANCODE_M] == KEY_DOWN) {
+				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
+			}
+
+			if (SDL_HasIntersection(&beat, &button)) { 
+				beats[i].shutDown();
 				Mix_PlayChannel(-1, oof_sfx, 0);
 			}
 		}
@@ -225,27 +196,31 @@ bool Manager::update() {
 }
 
 void Manager::draw() {
+	// Clears the renderer
 	SDL_RenderClear(renderer);
+
+	// Draw background
 	SDL_RenderCopy(renderer, background_img, NULL, NULL);
-	// Draw player
+
+	// Draw buttons
 	SDL_Rect rc;
-	player.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 	SDL_RenderCopy(renderer, player_img, NULL, &rc);
 
-	//Draw shots
+	buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, player_img, NULL, &rc);
 
-	for (int i = 0; i < MAX_SHOTS; ++i) {
-		if (playerShots[i].isAlive()) {
-			playerShots[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-			SDL_RenderCopy(renderer, shot_img, NULL, &rc);
-		}
-	}
+	buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, player_img, NULL, &rc);
 
-	enemy.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-	for (int i = 0; i < MAX_ENEMY_SHOTS; i++) {
-		if (enemyShots[i].isAlive()) {
-			enemyShots[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-			SDL_RenderCopy(renderer, enemyshot_img, NULL, &rc);
+	buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, player_img, NULL, &rc);
+
+	// Draw beats
+	for (int i = 0; i < MAX_BEATS; ++i) {
+		if (beats[i].isAlive()) {
+			beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+			SDL_RenderCopy(renderer, beat_img, NULL, &rc);
 		}
 	}
 
