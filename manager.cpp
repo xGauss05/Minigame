@@ -153,7 +153,6 @@ bool Manager::update() {
 		}
 	}
 	if (keys[SDL_SCANCODE_DOWN] == KEY_REPEAT) {
-
 		if (player.getY() <= WINDOW_HEIGHT - player.getHeight()) {
 			fy = 1;
 		}
@@ -178,12 +177,12 @@ bool Manager::update() {
 		idx_shot %= MAX_SHOTS;
 
 		Mix_PlayChannel(-1, shot_sfx, 0);
-		
+
 		//Mix_PlayChannel(-1, sound2, 0);
 	}
 	if ((rand() % (100 - 0 + 1) + 0) <= 15) {
 		if (!enemyShots[idx_enemyshot].isAlive()) {
-			enemyShots[idx_enemyshot].init(WINDOW_WIDTH, rand() % (WINDOW_HEIGHT - 82 + 1) + 82, 56, 20, 5);
+			enemyShots[idx_enemyshot].init(WINDOW_WIDTH, rand() % (WINDOW_HEIGHT - 82 + 1) + 82, 56, 20, 20);
 			idx_enemyshot++;
 			idx_enemyshot %= MAX_ENEMY_SHOTS;
 		}
@@ -211,7 +210,11 @@ bool Manager::update() {
 			enemyShots[i].move(-1, 0);
 			player.getRect(&player_rect.x, &player_rect.y, &player_rect.w, &player_rect.h);
 			enemyShots[i].getRect(&bullet_rect.x, &bullet_rect.y, &bullet_rect.w, &bullet_rect.h);
-			if (enemyShots[i].getX() < -enemyShots[i].getWidth() || SDL_HasIntersection(&player_rect, &bullet_rect)) {
+			if (enemyShots[i].getX() < -enemyShots[i].getWidth()) {
+				enemyShots[i].shutDown();
+
+			}
+			if (SDL_HasIntersection(&player_rect, &bullet_rect)) {
 				enemyShots[i].shutDown();
 				Mix_PlayChannel(-1, oof_sfx, 0);
 			}
