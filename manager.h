@@ -15,17 +15,18 @@
 #define MAX_KEYS		256
 #define MAX_BEATS		32
 
-#define BUTTON_H		82
-#define BUTTON_W		104
+#define BUTTON_H		96
+#define BUTTON_W		96
 #define BUTTON_Y		WINDOW_HEIGHT - BUTTON_H
 #define BUTTON_X		200
 #define BUTTON_MARGIN   20
 
-#define SPRITE_H		56
-#define SPRITE_W		20
+#define SPRITE_H		48
+#define SPRITE_W		48
 #define SPRITE_Y_SPAWN  -SPRITE_H
 #define SPRITE_SPEED	4
 
+#define DELAY		    25	
 class Manager {
 public:
 	Manager();
@@ -44,12 +45,17 @@ private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Texture* background_img, * player_img, * beat_img;
+	SDL_Texture* left_arrow_btn_img, * down_arrow_btn_img, 
+				* up_arrow_btn_img, *right_arrow_btn_img;
+	SDL_Texture* left_arrow_beat_img, * down_arrow_beat_img,
+		* up_arrow_beat_img, * right_arrow_beat_img;
+
 	Mix_Music* bgm;
 	Mix_Chunk* beat_sfx, *score_sfx, *fail_sfx;
 	SDL_Rect error_marginW, error_marginA, error_marginS, error_marginD;
 	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS];
-	int idx_beat, idx_lowest_beat, column;
-
+	int idx_beat, idx_lowest_beat;
+	int delayCounter;
 	enum KEY_STATE { KEY_IDLE, KEY_DOWN, KEY_REPEAT, KEY_UP };
 	KEY_STATE keys[MAX_KEYS];
 };

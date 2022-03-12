@@ -46,7 +46,7 @@ bool Manager::init() {
 	if (!loadSounds()) return false;
 
 	// Init variables
-	//Mix_PlayMusic(music,-1);
+	Mix_PlayMusic(bgm, -1);
 	buttonA.init(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
 	buttonS.init(BUTTON_X + BUTTON_MARGIN + BUTTON_W, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
 	buttonW.init(BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
@@ -59,7 +59,8 @@ bool Manager::init() {
 
 	idx_beat = 0;
 	idx_lowest_beat = 0;
-	column = 0;
+
+	delayCounter = 0;
 	return true;
 }
 
@@ -71,7 +72,7 @@ bool Manager::loadSounds() {
 	int flags = MIX_INIT_OGG;
 	int initted = Mix_Init(flags);
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
-	bgm = Mix_LoadMUS("sounds/bgm/106.ogg");
+	bgm = Mix_LoadMUS("sounds/bgm/bergentruckung.ogg");
 	if (!bgm) {
 		SDL_Log("(Mix_LoadMus) Couldn't load 'bgm': %s\n", Mix_GetError());
 	}
@@ -105,7 +106,51 @@ bool Manager::loadTextures() {
 		SDL_Log("IMG_Init: %s\n", IMG_GetError());
 	}
 
-	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/smile.png"));
+	left_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/left-arrow-framed.png"));
+	if (left_arrow_btn_img == NULL) {
+		SDL_Log("Couldn't load texture for left_arrow_btn_img: %s", SDL_GetError());
+		return false;
+	}
+	left_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/left-arrow.png"));
+	if (left_arrow_beat_img == NULL) {
+		SDL_Log("Couldn't load texture for left_arrow_beat_img: %s", SDL_GetError());
+		return false;
+	}
+
+	down_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/down-arrow-framed.png"));
+	if (down_arrow_btn_img == NULL) {
+		SDL_Log("Couldn't load texture for down_arrow_btn_img: %s", SDL_GetError());
+		return false;
+	}
+	down_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/down-arrow.png"));
+	if (down_arrow_beat_img == NULL) {
+		SDL_Log("Couldn't load texture for down_arrow_beat_img: %s", SDL_GetError());
+		return false;
+	}
+
+	up_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/up-arrow-framed.png"));
+	if (up_arrow_btn_img == NULL) {
+		SDL_Log("Couldn't load texture for up_arrow_btn_img: %s", SDL_GetError());
+		return false;
+	}
+	up_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/up-arrow.png"));
+	if (up_arrow_beat_img == NULL) {
+		SDL_Log("Couldn't load texture for up_arrow_beat_img: %s", SDL_GetError());
+		return false;
+	}
+
+	right_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/right-arrow-framed.png"));
+	if (right_arrow_btn_img == NULL) {
+		SDL_Log("Couldn't load texture for right_arrow_btn_img: %s", SDL_GetError());
+		return false;
+	}
+	right_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/right-arrow.png"));
+	if (right_arrow_beat_img == NULL) {
+		SDL_Log("Couldn't load texture for right_arrow_beat_img: %s", SDL_GetError());
+		return false;
+	}
+
+	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/bg.png"));
 	if (background_img == NULL) {
 		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
 		return false;
@@ -165,11 +210,11 @@ bool Manager::update() {
 
 	// Process Input
 	if (keys[SDL_SCANCODE_ESCAPE] == KEY_DOWN) return true;
-
-	if ((rand() % (100 - 0 + 1) + 0) <= 5) {
+	delayCounter++;
+	if ((rand() % (100 - 0 + 1) + 0) <= 10) {
 		int randCol = (rand() % (4 - 1 + 1)) + 1;
-		
-		if (!beats[idx_beat].isAlive()) {
+
+		if (!beats[idx_beat].isAlive() && delayCounter >= DELAY) {
 			SDL_Rect button;
 			switch (randCol) {
 			case 1:
@@ -185,20 +230,13 @@ bool Manager::update() {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				break;
 			}
-			
-			if (column == randCol) {
-				beats[idx_beat].init(button.x, SPRITE_Y_SPAWN + SPRITE_H * 2, SPRITE_W, SPRITE_H, SPRITE_SPEED);
-			}
-			else {
-				beats[idx_beat].init(button.x, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
-			}
-			column = randCol;
+
+			beats[idx_beat].init(button.x, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
+
 			idx_beat++;
 			idx_beat %= MAX_BEATS;
-
+			delayCounter = 0;
 		}
-		
-
 	}
 
 	// Logic
@@ -213,7 +251,7 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					continue;
+					break;
 				}
 			}
 
@@ -222,7 +260,7 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					continue;
+					break;
 				}
 			}
 
@@ -231,7 +269,7 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					continue;
+					break;
 				}
 			}
 
@@ -240,21 +278,19 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
 					Mix_PlayChannel(-1, fail_sfx, 0);
-					continue;
+					break;
 				}
 			}
 
 			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
 				Mix_PlayChannel(-1, score_sfx, 0);
-				continue;
+				break;
 			}
-
-
 
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
-				// Mix_PlayChannel(-1, fail_sfx, 0);
+				Mix_PlayChannel(-1, fail_sfx, 0);
 			}
 		}
 	}
@@ -273,22 +309,36 @@ void Manager::draw() {
 	// Draw buttons
 	SDL_Rect rc;
 	buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-	SDL_RenderCopy(renderer, player_img, NULL, &rc);
+	SDL_RenderCopy(renderer, up_arrow_btn_img, NULL, &rc);
 
 	buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-	SDL_RenderCopy(renderer, player_img, NULL, &rc);
+	SDL_RenderCopy(renderer, left_arrow_btn_img, NULL, &rc);
 
 	buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-	SDL_RenderCopy(renderer, player_img, NULL, &rc);
+	SDL_RenderCopy(renderer, down_arrow_btn_img, NULL, &rc);
 
 	buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-	SDL_RenderCopy(renderer, player_img, NULL, &rc);
+	SDL_RenderCopy(renderer, right_arrow_btn_img, NULL, &rc);
 
 	// Draw beats
 	for (int i = 0; i < MAX_BEATS; ++i) {
 		if (beats[i].isAlive()) {
 			beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-			SDL_RenderCopy(renderer, beat_img, NULL, &rc);
+			if (beats[i].getX() == BUTTON_X) {
+				SDL_RenderCopy(renderer, left_arrow_beat_img, NULL, &rc);
+			}
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W) {
+				SDL_RenderCopy(renderer, down_arrow_beat_img, NULL, &rc);
+
+			}
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2) {
+				SDL_RenderCopy(renderer, up_arrow_beat_img, NULL, &rc);
+
+			}
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3) {
+				SDL_RenderCopy(renderer, right_arrow_beat_img, NULL, &rc);
+
+			}
 		}
 	}
 
