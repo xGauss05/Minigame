@@ -82,7 +82,7 @@ void updateScore(Entity* score, int amount) {
 
 bool Manager::loadSounds() {
 	if (SDL_Init(SDL_INIT_AUDIO) == -1) {
-		SDL_Log("(SDL_INIT_AUDIO) Failed to load soundS: %s\n", SDL_GetError());
+		SDL_Log("(SDL_INIT_AUDIO) Failed to load sounds: %s\n", SDL_GetError());
 		return false;
 	}
 	int flags = MIX_INIT_OGG;
@@ -91,12 +91,6 @@ bool Manager::loadSounds() {
 	bgm = Mix_LoadMUS("sounds/bgm/bergentruckung.ogg");
 	if (!bgm) {
 		SDL_Log("(Mix_LoadMus) Couldn't load 'bgm': %s\n", Mix_GetError());
-	}
-
-
-	beat_sfx = Mix_LoadWAV("sounds/sfx/128.wav");
-	if (!beat_sfx) {
-		SDL_Log("(Mix_LoadWAV) Couldn't load 'beat_sfx': %s\n", Mix_GetError());
 	}
 
 	score_sfx = Mix_LoadWAV("sounds/sfx/score.wav");
@@ -202,7 +196,8 @@ void Manager::release() {
 	SDL_DestroyTexture(right_arrow_beat_img);
 	IMG_Quit();
 	Mix_FreeMusic(bgm);
-	Mix_FreeChunk(beat_sfx);
+	Mix_FreeChunk(score_sfx);
+	Mix_FreeChunk(fail_sfx);
 	Mix_CloseAudio();
 	Mix_Quit();
 	SDL_Quit();
@@ -255,7 +250,7 @@ bool Manager::update() {
 				break;
 			}
 
-			beats[idx_beat].init(button.x, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
+			beats[idx_beat].init(button.x + SPRITE_W/2, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
 
 			idx_beat++;
 			idx_beat %= MAX_BEATS;
@@ -359,18 +354,18 @@ void Manager::draw() {
 	for (int i = 0; i < MAX_BEATS; ++i) {
 		if (beats[i].isAlive()) {
 			beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-			if (beats[i].getX() == BUTTON_X) {
+			if (beats[i].getX() == BUTTON_X + SPRITE_W / 2) {
 				SDL_RenderCopy(renderer, left_arrow_beat_img, NULL, &rc);
 			}
-			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W) {
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W + SPRITE_W / 2) {
 				SDL_RenderCopy(renderer, down_arrow_beat_img, NULL, &rc);
 
 			}
-			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2) {
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2 + SPRITE_W / 2) {
 				SDL_RenderCopy(renderer, up_arrow_beat_img, NULL, &rc);
 
 			}
-			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3) {
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3 + SPRITE_W / 2) {
 				SDL_RenderCopy(renderer, right_arrow_beat_img, NULL, &rc);
 
 			}

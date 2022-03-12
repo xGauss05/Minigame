@@ -57,7 +57,7 @@ private:
 		* up_arrow_beat_img, * right_arrow_beat_img,
 		* remainingScore_img, * score_img;
 	Mix_Music* bgm;
-	Mix_Chunk* beat_sfx, * score_sfx, * fail_sfx;
+	Mix_Chunk* score_sfx, * fail_sfx;
 	SDL_Rect error_marginW, error_marginA, error_marginS, error_marginD;
 	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS],
 		score, remainingScore;
