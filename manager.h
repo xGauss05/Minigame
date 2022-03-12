@@ -24,9 +24,16 @@
 #define SPRITE_H		48
 #define SPRITE_W		48
 #define SPRITE_Y_SPAWN  -SPRITE_H
-#define SPRITE_SPEED	4
+#define SPRITE_SPEED	7
 
 #define DELAY		    25	
+
+#define SCORE_X			100
+#define SCORE_Y			100
+#define SCORE_W			50
+#define SCORE_H			WINDOW_HEIGHT - 100
+
+#define SCORE			50
 class Manager {
 public:
 	Manager();
@@ -44,18 +51,19 @@ public:
 private:
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	SDL_Texture* background_img, * player_img, * beat_img;
-	SDL_Texture* left_arrow_btn_img, * down_arrow_btn_img, 
-				* up_arrow_btn_img, *right_arrow_btn_img;
-	SDL_Texture* left_arrow_beat_img, * down_arrow_beat_img,
-		* up_arrow_beat_img, * right_arrow_beat_img;
-
+	SDL_Texture* background_img, * left_arrow_btn_img, * down_arrow_btn_img,
+		* up_arrow_btn_img, * right_arrow_btn_img,
+		* left_arrow_beat_img, * down_arrow_beat_img,
+		* up_arrow_beat_img, * right_arrow_beat_img,
+		* remainingScore_img, * score_img;
 	Mix_Music* bgm;
-	Mix_Chunk* beat_sfx, *score_sfx, *fail_sfx;
+	Mix_Chunk* beat_sfx, * score_sfx, * fail_sfx;
 	SDL_Rect error_marginW, error_marginA, error_marginS, error_marginD;
-	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS];
-	int idx_beat, idx_lowest_beat;
-	int delayCounter;
+	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS],
+		score, remainingScore;
+
+	int idx_beat, delayCounter;
+
 	enum KEY_STATE { KEY_IDLE, KEY_DOWN, KEY_REPEAT, KEY_UP };
 	KEY_STATE keys[MAX_KEYS];
 };

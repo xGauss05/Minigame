@@ -14,7 +14,8 @@ public:
 	void shutDown();
 	bool isAlive();
 	void move(int dx, int dy);
-
+	void updateHeight(int dy);
+	
 private:
 	int x, y;
 	int width, height;

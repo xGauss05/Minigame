@@ -50,3 +50,10 @@ void Entity::move(int dx, int dy) {
 	x += dx * speed;
 	y += dy * speed;
 }
+
+void Entity::updateHeight(int dy) {
+	height += dy;
+}
+
+
+

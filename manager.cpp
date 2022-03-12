@@ -57,11 +57,27 @@ bool Manager::init() {
 	initRect(&error_marginW, BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 	initRect(&error_marginD, BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 
+
+	remainingScore.init(SCORE_X, SCORE_Y, SCORE_W, SCORE_H - SCORE_Y, 0);
+	score.init(SCORE_X, SCORE_H, SCORE_W, SCORE_H, 0);
 	idx_beat = 0;
-	idx_lowest_beat = 0;
 
 	delayCounter = 0;
 	return true;
+}
+
+void updateScore(Entity* score, int amount) {
+	if (amount > 0) {
+		score->move(0, -amount);
+		score->updateHeight(amount);
+	}
+	else {
+		if (score->getHeight() != SCORE_H)
+		{
+			score->move(0, amount);
+			score->updateHeight(-amount);
+		}
+	}
 }
 
 bool Manager::loadSounds() {
@@ -156,17 +172,19 @@ bool Manager::loadTextures() {
 		return false;
 	}
 
-	player_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/spaceship.png"));
-	if (player_img == NULL) {
-		SDL_Log("Couldn't load texture for player_img: %s", SDL_GetError());
+	remainingScore_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/remainingScore.png"));
+	if (background_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
 		return false;
 	}
 
-	beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/enemyshot.png"));
-	if (beat_img == NULL) {
-		SDL_Log("Couldn't load texture for beat_img: %s", SDL_GetError());
+	score_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/score.png"));
+	if (background_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
 		return false;
 	}
+
+
 
 	// SDL_Surface* surface = IMG_Load("img/shot.png");
 	return true;
@@ -174,8 +192,14 @@ bool Manager::loadTextures() {
 
 void Manager::release() {
 	SDL_DestroyTexture(background_img);
-	SDL_DestroyTexture(player_img);
-	SDL_DestroyTexture(beat_img);
+	SDL_DestroyTexture(left_arrow_btn_img);
+	SDL_DestroyTexture(left_arrow_beat_img);
+	SDL_DestroyTexture(down_arrow_btn_img);
+	SDL_DestroyTexture(down_arrow_beat_img);
+	SDL_DestroyTexture(up_arrow_btn_img);
+	SDL_DestroyTexture(up_arrow_beat_img);
+	SDL_DestroyTexture(right_arrow_btn_img);
+	SDL_DestroyTexture(right_arrow_beat_img);
 	IMG_Quit();
 	Mix_FreeMusic(bgm);
 	Mix_FreeChunk(beat_sfx);
@@ -250,6 +274,8 @@ bool Manager::update() {
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
+					updateScore(&score, -10);
+
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
 				}
@@ -259,6 +285,9 @@ bool Manager::update() {
 				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
+
+					updateScore(&score, -SCORE);
+
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
 				}
@@ -268,6 +297,8 @@ bool Manager::update() {
 				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
+					updateScore(&score, -SCORE);
+
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
 				}
@@ -277,6 +308,8 @@ bool Manager::update() {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
+					updateScore(&score, -SCORE);
+
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
 				}
@@ -284,12 +317,14 @@ bool Manager::update() {
 
 			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
+				updateScore(&score, SCORE);
 				Mix_PlayChannel(-1, score_sfx, 0);
 				break;
 			}
 
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
+				updateScore(&score, -SCORE);
 				Mix_PlayChannel(-1, fail_sfx, 0);
 			}
 		}
@@ -341,6 +376,10 @@ void Manager::draw() {
 			}
 		}
 	}
+	score.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, score_img, NULL, &rc);
+	remainingScore.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, remainingScore_img, NULL, &rc);
 
 	// Update screen
 	SDL_RenderPresent(renderer);
