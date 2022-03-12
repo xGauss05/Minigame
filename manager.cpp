@@ -6,7 +6,7 @@
 Manager::Manager() {}
 Manager::~Manager() {}
 
-void initRect(SDL_Rect *button, int x, int y, int w, int h) {
+void initRect(SDL_Rect* button, int x, int y, int w, int h) {
 	button->x = x;
 	button->y = y;
 	button->w = w;
@@ -52,14 +52,14 @@ bool Manager::init() {
 	buttonW.init(BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
 	buttonD.init(BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
 
-	initRect(&error_marginA, BUTTON_X, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);	
-	initRect(&error_marginS, BUTTON_X + BUTTON_MARGIN + BUTTON_W, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);	
+	initRect(&error_marginA, BUTTON_X, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
+	initRect(&error_marginS, BUTTON_X + BUTTON_MARGIN + BUTTON_W, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 	initRect(&error_marginW, BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 	initRect(&error_marginD, BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 
 	idx_beat = 0;
 	idx_lowest_beat = 0;
-
+	column = 0;
 	return true;
 }
 
@@ -91,7 +91,7 @@ bool Manager::loadSounds() {
 	if (!fail_sfx) {
 		SDL_Log("(Mix_LoadWAV) Couldn't load 'fail_sfx': %s\n", Mix_GetError());
 	}
-	
+
 	Mix_AllocateChannels(100);
 
 	return true;
@@ -117,7 +117,7 @@ bool Manager::loadTextures() {
 		return false;
 	}
 
-	beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/shot.png"));
+	beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/enemyshot.png"));
 	if (beat_img == NULL) {
 		SDL_Log("Couldn't load texture for beat_img: %s", SDL_GetError());
 		return false;
@@ -165,10 +165,13 @@ bool Manager::update() {
 
 	// Process Input
 	if (keys[SDL_SCANCODE_ESCAPE] == KEY_DOWN) return true;
+
 	if ((rand() % (100 - 0 + 1) + 0) <= 5) {
+		int randCol = (rand() % (4 - 1 + 1)) + 1;
+		
 		if (!beats[idx_beat].isAlive()) {
 			SDL_Rect button;
-			switch ((rand() % (4 - 1 + 1)) + 1) {
+			switch (randCol) {
 			case 1:
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				break;
@@ -182,20 +185,27 @@ bool Manager::update() {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				break;
 			}
-
-			beats[idx_beat].init(button.x, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
+			
+			if (column == randCol) {
+				beats[idx_beat].init(button.x, SPRITE_Y_SPAWN + SPRITE_H * 2, SPRITE_W, SPRITE_H, SPRITE_SPEED);
+			}
+			else {
+				beats[idx_beat].init(button.x, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
+			}
+			column = randCol;
 			idx_beat++;
 			idx_beat %= MAX_BEATS;
+
 		}
+		
+
 	}
 
 	// Logic
 	// Beats update & input
 	for (int i = 0; i < MAX_BEATS; ++i) {
 		if (beats[i].isAlive()) {
-
 			beats[i].move(0, 1);
-
 			SDL_Rect button, beat;
 			beats[i].getRect(&beat.x, &beat.y, &beat.w, &beat.h);
 			if (keys[SDL_SCANCODE_Z] == KEY_DOWN || keys[SDL_SCANCODE_LEFT] == KEY_DOWN) {
@@ -240,7 +250,7 @@ bool Manager::update() {
 				continue;
 			}
 
-			
+
 
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
