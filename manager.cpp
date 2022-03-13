@@ -3,8 +3,6 @@
 #include <time.h>
 #include <stdlib.h>
 
-
-
 Manager::Manager() {}
 Manager::~Manager() {}
 
@@ -49,6 +47,7 @@ bool Manager::init() {
 
 	// Init variables
 	Mix_PlayMusic(bgm, -1);
+
 	buttonA.init(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
 	buttonS.init(BUTTON_X + BUTTON_MARGIN + BUTTON_W, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
 	buttonW.init(BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
@@ -63,13 +62,10 @@ bool Manager::init() {
 	remainingScore.init(SCORE_X, SCORE_Y, SCORE_W, SCORE_H - SCORE_Y +SCORE, 0);
 
 	idx_beat = 0;
-	;
-
 	delayCounter = 0;
 	return true;
 }
 
-int scorePoints = 0;
 void updateScore(Entity* score, bool hasScored) {
 	if (hasScored) {
 		// Moves the bar up
@@ -259,7 +255,6 @@ bool Manager::update() {
 			}
 
 			beats[idx_beat].init(button.x + SPRITE_W / 2, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
-
 			idx_beat++;
 			idx_beat %= MAX_BEATS;
 			delayCounter = 0;
@@ -302,7 +297,6 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
 					updateScore(&score, false);
-
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
 				}
@@ -313,7 +307,6 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
 					updateScore(&score, false);
-
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
 				}
