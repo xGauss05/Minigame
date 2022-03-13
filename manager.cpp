@@ -3,6 +3,8 @@
 #include <time.h>
 #include <stdlib.h>
 
+
+
 Manager::Manager() {}
 Manager::~Manager() {}
 
@@ -57,25 +59,31 @@ bool Manager::init() {
 	initRect(&error_marginW, BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 	initRect(&error_marginD, BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3, BUTTON_Y - BUTTON_H, BUTTON_W, BUTTON_H);
 
+	score.init(SCORE_X, SCORE_H, SCORE_W, SCORE_H, 1);
+	remainingScore.init(SCORE_X, SCORE_Y, SCORE_W, SCORE_H - SCORE_Y +SCORE, 0);
 
-	remainingScore.init(SCORE_X, SCORE_Y, SCORE_W, SCORE_H - SCORE_Y, 0);
-	score.init(SCORE_X, SCORE_H, SCORE_W, SCORE_H, 0);
 	idx_beat = 0;
+	;
 
 	delayCounter = 0;
 	return true;
 }
 
-void updateScore(Entity* score, int amount) {
-	if (amount > 0) {
-		score->move(0, -amount);
-		score->updateHeight(amount);
+int scorePoints = 0;
+void updateScore(Entity* score, bool hasScored) {
+	if (hasScored) {
+		// Moves the bar up
+		score->move(0, -SCORE);
+		// Updates the height
+		score->updateHeight(SCORE);
 	}
 	else {
-		if (score->getHeight() != SCORE_H)
-		{
-			score->move(0, amount);
-			score->updateHeight(-amount);
+
+		if (score->getY() <= SCORE_H) {
+			// moves the bar down+
+			score->move(0, SCORE);
+			// Updates the height 
+			score->updateHeight(-SCORE);
 		}
 	}
 }
@@ -250,7 +258,7 @@ bool Manager::update() {
 				break;
 			}
 
-			beats[idx_beat].init(button.x + SPRITE_W/2, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
+			beats[idx_beat].init(button.x + SPRITE_W / 2, SPRITE_Y_SPAWN, SPRITE_W, SPRITE_H, SPRITE_SPEED);
 
 			idx_beat++;
 			idx_beat %= MAX_BEATS;
@@ -260,6 +268,7 @@ bool Manager::update() {
 
 	// Logic
 	// Beats update & input
+
 	for (int i = 0; i < MAX_BEATS; ++i) {
 		if (beats[i].isAlive()) {
 			beats[i].move(0, 1);
@@ -269,7 +278,7 @@ bool Manager::update() {
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
-					updateScore(&score, -10);
+					updateScore(&score, false);
 
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
@@ -281,7 +290,7 @@ bool Manager::update() {
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
 
-					updateScore(&score, -SCORE);
+					updateScore(&score, false);
 
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
@@ -292,7 +301,7 @@ bool Manager::update() {
 				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
-					updateScore(&score, -SCORE);
+					updateScore(&score, false);
 
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
@@ -303,7 +312,7 @@ bool Manager::update() {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
-					updateScore(&score, -SCORE);
+					updateScore(&score, false);
 
 					Mix_PlayChannel(-1, fail_sfx, 0);
 					break;
@@ -312,19 +321,20 @@ bool Manager::update() {
 
 			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
-				updateScore(&score, SCORE);
+				updateScore(&score, true);
 				Mix_PlayChannel(-1, score_sfx, 0);
 				break;
 			}
 
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
-				updateScore(&score, -SCORE);
+				updateScore(&score, false);
 				Mix_PlayChannel(-1, fail_sfx, 0);
 			}
 		}
 	}
-
+	if (score.getY() <= remainingScore.getY()) return true;
+	
 	return false;
 }
 
@@ -371,10 +381,11 @@ void Manager::draw() {
 			}
 		}
 	}
-	score.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-	SDL_RenderCopy(renderer, score_img, NULL, &rc);
 	remainingScore.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 	SDL_RenderCopy(renderer, remainingScore_img, NULL, &rc);
+	score.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, score_img, NULL, &rc);
+
 
 	// Update screen
 	SDL_RenderPresent(renderer);

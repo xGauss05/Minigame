@@ -31,9 +31,10 @@
 #define SCORE_X			100
 #define SCORE_Y			100
 #define SCORE_W			50
-#define SCORE_H			WINDOW_HEIGHT - 100
+#define SCORE_H			WINDOW_HEIGHT - 120
 
-#define SCORE			50
+#define SCORE			5
+
 class Manager {
 public:
 	Manager();
