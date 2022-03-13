@@ -23,7 +23,7 @@ bool Manager::init() {
 	}
 
 	// Create our window: title, x, y, w, h, flags
-	window = SDL_CreateWindow("Guitar Hero: Z, X, N, M or arrows", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("Guitar Hero: A, S, W, D or arrows", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == NULL) {
 		SDL_Log("(SDL_CreateWindow) Unable to create window: %s", SDL_GetError());
 		return false;
@@ -269,7 +269,7 @@ bool Manager::update() {
 			beats[i].move(0, 1);
 			SDL_Rect button, beat;
 			beats[i].getRect(&beat.x, &beat.y, &beat.w, &beat.h);
-			if (keys[SDL_SCANCODE_Z] == KEY_DOWN || keys[SDL_SCANCODE_LEFT] == KEY_DOWN) {
+			if (keys[SDL_SCANCODE_A] == KEY_DOWN || keys[SDL_SCANCODE_LEFT] == KEY_DOWN) {
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
@@ -280,7 +280,7 @@ bool Manager::update() {
 				}
 			}
 
-			if (keys[SDL_SCANCODE_X] == KEY_DOWN || keys[SDL_SCANCODE_DOWN] == KEY_DOWN) {
+			if (keys[SDL_SCANCODE_S] == KEY_DOWN || keys[SDL_SCANCODE_DOWN] == KEY_DOWN) {
 				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
@@ -292,7 +292,7 @@ bool Manager::update() {
 				}
 			}
 
-			if (keys[SDL_SCANCODE_N] == KEY_DOWN || keys[SDL_SCANCODE_UP] == KEY_DOWN) {
+			if (keys[SDL_SCANCODE_W] == KEY_DOWN || keys[SDL_SCANCODE_UP] == KEY_DOWN) {
 				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
@@ -302,7 +302,7 @@ bool Manager::update() {
 				}
 			}
 
-			if (keys[SDL_SCANCODE_M] == KEY_DOWN || keys[SDL_SCANCODE_RIGHT] == KEY_DOWN) {
+			if (keys[SDL_SCANCODE_D] == KEY_DOWN || keys[SDL_SCANCODE_RIGHT] == KEY_DOWN) {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
