@@ -66,23 +66,7 @@ bool Manager::init() {
 	return true;
 }
 
-void updateScore(Entity* score, bool hasScored) {
-	if (hasScored) {
-		// Moves the bar up
-		score->move(0, -SCORE);
-		// Updates the height
-		score->updateHeight(SCORE);
-	}
-	else {
 
-		if (score->getY() <= SCORE_H) {
-			// moves the bar down+
-			score->move(0, SCORE);
-			// Updates the height 
-			score->updateHeight(-SCORE);
-		}
-	}
-}
 
 bool Manager::loadSounds() {
 	if (SDL_Init(SDL_INIT_AUDIO) == -1) {
@@ -227,6 +211,24 @@ bool Manager::input() {
 	return true;
 }
 
+void updateScore(Entity* score, bool hasScored, Mix_Chunk* sound) {
+	if (hasScored) {
+		// Moves the bar up
+		score->move(0, -SCORE);
+		// Updates the height
+		score->updateHeight(SCORE);
+	}
+	else {
+		if (score->getY() <= SCORE_H) {
+			// moves the bar down+
+			score->move(0, SCORE);
+			// Updates the height 
+			score->updateHeight(-SCORE);
+
+		}
+	}
+	Mix_PlayChannel(-1, sound, 0);
+}
 bool Manager::update() {
 	// Read Input
 	if (!input()) return true;
@@ -273,9 +275,7 @@ bool Manager::update() {
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
-					updateScore(&score, false);
-
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
@@ -284,10 +284,7 @@ bool Manager::update() {
 				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
-
-					updateScore(&score, false);
-
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
@@ -296,8 +293,7 @@ bool Manager::update() {
 				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
-					updateScore(&score, false);
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
@@ -306,23 +302,20 @@ bool Manager::update() {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
-					updateScore(&score, false);
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
 
 			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
-				updateScore(&score, true);
-				Mix_PlayChannel(-1, score_sfx, 0);
+				updateScore(&score, true, score_sfx);
 				break;
 			}
 
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
-				updateScore(&score, false);
-				Mix_PlayChannel(-1, fail_sfx, 0);
+				updateScore(&score, false, fail_sfx);
 			}
 		}
 	}
