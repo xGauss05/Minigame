@@ -24,10 +24,10 @@
 #define SPRITE_H		48
 #define SPRITE_W		48
 #define SPRITE_Y_SPAWN  -SPRITE_H
-#define SPRITE_SPEED	7
+#define SPRITE_SPEED	4
 
-#define SPAWN_DELAY		13	
-#define SCREEN_DELAY	2000 // In ms
+#define SPAWN_DELAY		20	
+#define SCREEN_DELAY	5000 // In ms
 
 #define SCORE_X			100
 #define SCORE_Y			100
@@ -50,6 +50,7 @@ public:
 	bool input();
 	bool update();
 	void draw();
+	void drawCharacter(SDL_Rect* rect);
 
 private:
 	// SDL
@@ -57,23 +58,24 @@ private:
 	SDL_Renderer* renderer;
 
 	// Textures
-	SDL_Texture* background_img, * score_img, * remainingScore_img, * end_img, * start_img,
-		* left_arrow_btn_img, * down_arrow_btn_img, * up_arrow_btn_img, * right_arrow_btn_img,
-		* left_arrow_beat_img, * down_arrow_beat_img, * up_arrow_beat_img, * right_arrow_beat_img;
+	SDL_Texture	* background_img,		* score_img,			* remainingScore_img,	* end_img,	* start_img,
+				* left_arrow_btn_img,	* down_arrow_btn_img,	* up_arrow_btn_img,		* right_arrow_btn_img,
+				* left_arrow_beat_img,	* down_arrow_beat_img,	* up_arrow_beat_img,	* right_arrow_beat_img,
+				* character_end,		*character_happy,		*character_idle1,		*character_idle2;
 
 	// Sound
 	Mix_Music* bgm;
 	Mix_Chunk* score_sfx, * fail_sfx;
 
 	// Entities
-	SDL_Rect error_marginW, error_marginA, error_marginS, error_marginD;
+	SDL_Rect error_marginW, error_marginA, error_marginS, error_marginD, characterRect;
 	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS], score, remainingScore;
 
 	// Counters
-	int idx_beat, delayCounter;
+	int idx_beat, delayCounter, animCounter;
 
 	// Boolean
-	bool gameStart, gameEnd, debugMode;
+	bool gameStart, gameEnd, debugMode, animPhase;
 
 	// Input
 	enum KEY_STATE { KEY_IDLE, KEY_DOWN, KEY_REPEAT, KEY_UP };

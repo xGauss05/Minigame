@@ -222,6 +222,31 @@ bool Manager::loadTextures() {
 		return false;
 	}
 
+	#pragma region Character
+
+	character_end = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/character_end.png"));
+	if (score_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s\n", SDL_GetError());
+		return false;
+	}
+	character_happy = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/character_happy.png"));
+	if (score_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s\n", SDL_GetError());
+		return false;
+	}
+	character_idle1 = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/character_idle1.png"));
+	if (score_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s\n", SDL_GetError());
+		return false;
+	}
+	character_idle2 = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/character_idle2.png"));
+	if (score_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s\n", SDL_GetError());
+		return false;
+	}
+
+#pragma endregion
+
 	return true;
 }
 
@@ -248,6 +273,8 @@ bool Manager::initVariables() {
 
 	idx_beat = 0;
 	delayCounter = 0;
+	animCounter = 0;
+	animPhase = false;
 	debugMode = false;
 	gameEnd = false;
 	gameStart = true;
@@ -415,6 +442,28 @@ bool Manager::update() {
 	return false;
 }
 
+void Manager::drawCharacter(SDL_Rect *rect)
+{
+	initRect(rect, 800, WINDOW_HEIGHT / 2, 320, 320);
+
+	animCounter++;
+
+	if (animPhase)
+	{
+		SDL_RenderCopy(renderer, character_idle1, NULL, rect);
+	}
+	else if (!animPhase)
+	{
+		SDL_RenderCopy(renderer, character_idle2, NULL, rect);
+	}
+
+	if (animCounter > 20)
+	{
+		animCounter = 0;
+		animPhase = !animPhase;
+	}
+}
+
 /**
  * This function manages all drawing functions
  */
@@ -520,12 +569,17 @@ void Manager::draw() {
 	SDL_RenderCopy(renderer, score_img, NULL, &rc);
 
 	// Checks if the game is ended
+
 	if (gameEnd) {
 		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, character_happy, NULL, &characterRect);
 		SDL_RenderCopy(renderer, end_img, NULL, NULL);
 		SDL_RenderPresent(renderer);
 		SDL_Delay(SCREEN_DELAY);
 	}
+
+	
+	drawCharacter(&characterRect);
 
 	// Update screen
 	SDL_RenderPresent(renderer);
