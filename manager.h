@@ -46,7 +46,6 @@ public:
 	bool loadTextures();
 	bool initVariables();
 	void release();
-
 	bool input();
 	bool update();
 	void draw();

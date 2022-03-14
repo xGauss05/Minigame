@@ -415,6 +415,14 @@ bool Manager::update() {
 }
 
 /**
+ * This function applies the image in the selected rect
+ */
+void applyImage(SDL_Renderer* renderer, SDL_Rect rect, SDL_Texture* image) {
+	SDL_RenderFillRect(renderer, &rect);
+	SDL_RenderCopy(renderer, image, NULL, &rect);
+}
+
+/**
  * This function manages all drawing functions
  */
 void Manager::draw() {
@@ -458,15 +466,12 @@ void Manager::draw() {
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W + SPRITE_W / 2) {
 					SDL_RenderCopy(renderer, down_arrow_beat_img, NULL, &rc);
-
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2 + SPRITE_W / 2) {
 					SDL_RenderCopy(renderer, up_arrow_beat_img, NULL, &rc);
-
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3 + SPRITE_W / 2) {
 					SDL_RenderCopy(renderer, right_arrow_beat_img, NULL, &rc);
-
 				}
 			}
 		}
@@ -475,24 +480,19 @@ void Manager::draw() {
 		// Draw buttons
 		buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 0, 0, 255);
-		SDL_RenderFillRect(renderer, &rc);
-		SDL_RenderCopy(renderer, up_arrow_btn_img, NULL, &rc);
-
+		applyImage(renderer, rc, up_arrow_btn_img);
+		
 		buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 0, 50, 0, 255);
-		SDL_RenderFillRect(renderer, &rc);
-		SDL_RenderCopy(renderer, left_arrow_btn_img, NULL, &rc);
+		applyImage(renderer, rc, left_arrow_btn_img);
 
 		buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 50, 0, 255);
-		SDL_RenderFillRect(renderer, &rc);
-		SDL_RenderCopy(renderer, down_arrow_btn_img, NULL, &rc);
+		applyImage(renderer, rc, down_arrow_btn_img);
 
 		buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 50, 255);
-		SDL_RenderFillRect(renderer, &rc);
-		SDL_RenderCopy(renderer, right_arrow_btn_img, NULL, &rc);
-
+		applyImage(renderer, rc, right_arrow_btn_img);
 
 		// Draw error margins
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
@@ -501,30 +501,25 @@ void Manager::draw() {
 		SDL_RenderFillRect(renderer, &error_marginS);
 		SDL_RenderFillRect(renderer, &error_marginD);
 
-
 		// Draw beats
 		for (int i = 0; i < MAX_BEATS; ++i) {
 			if (beats[i].isAlive()) {
 				beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 				if (beats[i].getX() == BUTTON_X + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
-					SDL_RenderFillRect(renderer, &rc);
-					SDL_RenderCopy(renderer, left_arrow_beat_img, NULL, &rc);
+					applyImage(renderer, rc, left_arrow_beat_img);
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 100, 100, 0, 255);
-					SDL_RenderFillRect(renderer, &rc);
-					SDL_RenderCopy(renderer, down_arrow_beat_img, NULL, &rc);
+					applyImage(renderer, rc, down_arrow_beat_img);
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2 + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
-					SDL_RenderFillRect(renderer, &rc);
-					SDL_RenderCopy(renderer, up_arrow_beat_img, NULL, &rc);
+					applyImage(renderer, rc, up_arrow_beat_img);
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3 + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 0, 0, 100, 255);
-					SDL_RenderFillRect(renderer, &rc);
-					SDL_RenderCopy(renderer, right_arrow_beat_img, NULL, &rc);
+					applyImage(renderer, rc, right_arrow_beat_img);
 				}
 			}
 		}
