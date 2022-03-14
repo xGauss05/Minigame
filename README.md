@@ -3,8 +3,11 @@ This is a minigame created by Owo Games for educational purposes.
 ## Game instructions
 The purpose of the game is having a great timing. You must press the correct button whenever the beat is on the middle of the button. Whenever the white bar is full,
 the game automatically closes.
+## Before executing
+- Set the path to $(ProjectDir)/Game/
+- Remember to change the solution platform to x86.
 
-- Controls
+## Controls
 * 'A' or 'LEFT KEY': Triggers the left button.
 * 'S' or 'DOWN KEY': Triggers the down button.
 * 'W' or 'UP KEY': Triggers the up button.
