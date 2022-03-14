@@ -135,7 +135,7 @@ bool Manager::loadSounds() {
 	}
 
 	Mix_AllocateChannels(100);
-
+	Mix_VolumeMusic(MIX_MAX_VOLUME / 2);
 	return true;
 }
 
@@ -229,6 +229,8 @@ bool Manager::loadTextures() {
  * This function initializes all the necessary variables
  */
 bool Manager::initVariables() {
+	// BGM Music volume
+
 	Mix_PlayMusic(bgm, -1);
 
 	buttonA.init(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
@@ -364,7 +366,6 @@ bool Manager::update() {
 				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
-
 					updateScore(&score, false, fail_sfx);
 					break;
 				}
@@ -415,14 +416,6 @@ bool Manager::update() {
 }
 
 /**
- * This function applies the image in the selected rect
- */
-void applyImage(SDL_Renderer* renderer, SDL_Rect rect, SDL_Texture* image) {
-	SDL_RenderFillRect(renderer, &rect);
-	SDL_RenderCopy(renderer, image, NULL, &rect);
-}
-
-/**
  * This function manages all drawing functions
  */
 void Manager::draw() {
@@ -433,94 +426,85 @@ void Manager::draw() {
 	if (gameStart) {
 		SDL_RenderCopy(renderer, start_img, NULL, NULL);
 		SDL_RenderPresent(renderer);
-		SDL_Delay(2000);
+		SDL_Delay(SCREEN_DELAY);
 		gameStart = false;
 	}
 
 	// Draw background
 	SDL_RenderCopy(renderer, background_img, NULL, NULL);
-	
+
 	SDL_Rect rc;
 
-	if (!debugMode) {
-		// Draw buttons
-
-		buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-		SDL_RenderCopy(renderer, up_arrow_btn_img, NULL, &rc);
-
-		buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-		SDL_RenderCopy(renderer, left_arrow_btn_img, NULL, &rc);
-
-		buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-		SDL_RenderCopy(renderer, down_arrow_btn_img, NULL, &rc);
-
-		buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-		SDL_RenderCopy(renderer, right_arrow_btn_img, NULL, &rc);
-
-		// Draw beats
-		for (int i = 0; i < MAX_BEATS; ++i) {
-			if (beats[i].isAlive()) {
-				beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
-				if (beats[i].getX() == BUTTON_X + SPRITE_W / 2) {
-					SDL_RenderCopy(renderer, left_arrow_beat_img, NULL, &rc);
-				}
-				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W + SPRITE_W / 2) {
-					SDL_RenderCopy(renderer, down_arrow_beat_img, NULL, &rc);
-				}
-				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2 + SPRITE_W / 2) {
-					SDL_RenderCopy(renderer, up_arrow_beat_img, NULL, &rc);
-				}
-				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3 + SPRITE_W / 2) {
-					SDL_RenderCopy(renderer, right_arrow_beat_img, NULL, &rc);
-				}
-			}
-		}
-	}
-	else {
-		// Draw buttons
+	if (debugMode) {
+		// Draw buttons collisions
 		buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 0, 0, 255);
-		applyImage(renderer, rc, up_arrow_btn_img);
-		
+
 		buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 0, 50, 0, 255);
-		applyImage(renderer, rc, left_arrow_btn_img);
 
 		buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 50, 0, 255);
-		applyImage(renderer, rc, down_arrow_btn_img);
 
 		buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 50, 255);
-		applyImage(renderer, rc, right_arrow_btn_img);
 
-		// Draw error margins
+		// Draw error margins collisions
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderFillRect(renderer, &error_marginW);
 		SDL_RenderFillRect(renderer, &error_marginA);
 		SDL_RenderFillRect(renderer, &error_marginS);
 		SDL_RenderFillRect(renderer, &error_marginD);
 
-		// Draw beats
+		// Draw beats collisions
 		for (int i = 0; i < MAX_BEATS; ++i) {
 			if (beats[i].isAlive()) {
 				beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 				if (beats[i].getX() == BUTTON_X + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 0, 100, 0, 255);
-					applyImage(renderer, rc, left_arrow_beat_img);
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 100, 100, 0, 255);
-					applyImage(renderer, rc, down_arrow_beat_img);
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2 + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 100, 0, 0, 255);
-					applyImage(renderer, rc, up_arrow_beat_img);
 				}
 				else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3 + SPRITE_W / 2) {
 					SDL_SetRenderDrawColor(renderer, 0, 0, 100, 255);
-					applyImage(renderer, rc, right_arrow_beat_img);
 				}
+				SDL_RenderFillRect(renderer, &rc);
+			}
+		}
+	}
+
+	// Draw buttons
+	buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, up_arrow_btn_img, NULL, &rc);
+
+	buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, left_arrow_btn_img, NULL, &rc);
+
+	buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, down_arrow_btn_img, NULL, &rc);
+
+	buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+	SDL_RenderCopy(renderer, right_arrow_btn_img, NULL, &rc);
+
+	// Draw beats
+	for (int i = 0; i < MAX_BEATS; ++i) {
+		if (beats[i].isAlive()) {
+			beats[i].getRect(&rc.x, &rc.y, &rc.w, &rc.h);
+			if (beats[i].getX() == BUTTON_X + SPRITE_W / 2) {
+				SDL_RenderCopy(renderer, left_arrow_beat_img, NULL, &rc);
+			}
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN + BUTTON_W + SPRITE_W / 2) {
+				SDL_RenderCopy(renderer, down_arrow_beat_img, NULL, &rc);
+			}
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 2 + BUTTON_W * 2 + SPRITE_W / 2) {
+				SDL_RenderCopy(renderer, up_arrow_beat_img, NULL, &rc);
+			}
+			else if (beats[i].getX() == BUTTON_X + BUTTON_MARGIN * 3 + BUTTON_W * 3 + SPRITE_W / 2) {
+				SDL_RenderCopy(renderer, right_arrow_beat_img, NULL, &rc);
 			}
 		}
 	}
@@ -531,16 +515,15 @@ void Manager::draw() {
 	score.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 	SDL_RenderCopy(renderer, score_img, NULL, &rc);
 
-	// Update screen
-	SDL_RenderPresent(renderer);
-
 	// Checks if the game is ended
 	if (gameEnd) {
 		SDL_RenderClear(renderer);
 		SDL_RenderCopy(renderer, end_img, NULL, NULL);
 		SDL_RenderPresent(renderer);
-		SDL_Delay(2000);
+		SDL_Delay(SCREEN_DELAY);
 	}
 
+	// Update screen
+	SDL_RenderPresent(renderer);
 	SDL_Delay(10);	// 1000/10 = 100 fps max
 }

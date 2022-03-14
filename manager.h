@@ -26,7 +26,8 @@
 #define SPRITE_Y_SPAWN  -SPRITE_H
 #define SPRITE_SPEED	7
 
-#define SPAWN_DELAY		25	
+#define SPAWN_DELAY		13	
+#define SCREEN_DELAY	2000 // In ms
 
 #define SCORE_X			100
 #define SCORE_Y			100
