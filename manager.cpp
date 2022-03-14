@@ -439,15 +439,19 @@ void Manager::draw() {
 		// Draw buttons collisions
 		buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 0, 0, 255);
+		SDL_RenderFillRect(renderer, &rc);
 
 		buttonA.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 0, 50, 0, 255);
+		SDL_RenderFillRect(renderer, &rc);
 
 		buttonS.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 50, 0, 255);
+		SDL_RenderFillRect(renderer, &rc);
 
 		buttonD.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 0, 0, 50, 255);
+		SDL_RenderFillRect(renderer, &rc);
 
 		// Draw error margins collisions
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
