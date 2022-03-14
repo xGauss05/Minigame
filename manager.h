@@ -24,9 +24,9 @@
 #define SPRITE_H		48
 #define SPRITE_W		48
 #define SPRITE_Y_SPAWN  -SPRITE_H
-#define SPRITE_SPEED	7
+#define SPRITE_SPEED	5
 
-#define DELAY		    25	
+#define DELAY		    50	
 
 #define SCORE_X			100
 #define SCORE_Y			100
@@ -41,8 +41,10 @@ public:
 	~Manager();
 
 	bool init();
+	bool initSDL();
 	bool loadSounds();
 	bool loadTextures();
+	bool initVariables();
 	void release();
 
 	bool input();
@@ -50,21 +52,28 @@ public:
 	void draw();
 
 private:
+	//SDL
 	SDL_Window* window;
 	SDL_Renderer* renderer;
-	SDL_Texture* background_img, * left_arrow_btn_img, * down_arrow_btn_img,
-		* up_arrow_btn_img, * right_arrow_btn_img,
-		* left_arrow_beat_img, * down_arrow_beat_img,
-		* up_arrow_beat_img, * right_arrow_beat_img,
-		* remainingScore_img, * score_img;
+
+	//Textures
+	SDL_Texture	* background_img,		* score_img,			* remainingScore_img,
+				* left_arrow_btn_img,	* down_arrow_btn_img,	* up_arrow_btn_img,		* right_arrow_btn_img,
+				* left_arrow_beat_img,	* down_arrow_beat_img,	* up_arrow_beat_img,	* right_arrow_beat_img;
+
+	//Sound
 	Mix_Music* bgm;
 	Mix_Chunk* score_sfx, * fail_sfx;
+
+	//Entities
 	SDL_Rect error_marginW, error_marginA, error_marginS, error_marginD;
-	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS],
-		score, remainingScore;
+	Entity buttonW, buttonA, buttonS, buttonD, beats[MAX_BEATS], score, remainingScore;
 
+	//Counters
 	int idx_beat, delayCounter;
+	bool debugMode;
 
+	//Input
 	enum KEY_STATE { KEY_IDLE, KEY_DOWN, KEY_REPEAT, KEY_UP };
 	KEY_STATE keys[MAX_KEYS];
 };
