@@ -6,17 +6,38 @@
 Manager::Manager() {}
 Manager::~Manager() {}
 
-int random(int max, int min)
-{
+/**
+ * This function computes a random number between max and min, both included
+ * @param max the maximum parameter
+ * @param min the minimum parameter
+ * @return Random number between max and min.
+ */
+int random(int max, int min) {
 	return (rand() % (max - min + 1)) + min;
 }
+
+/**
+ * This function initializes a button's rect
+ * @param button the Rect to be initialized
+ * @param x coordinate x
+ * @param y coordinate y
+ * @param w width of the rect
+ * @param h height of the rect
+ */
 void initRect(SDL_Rect* button, int x, int y, int w, int h) {
 	button->x = x;
 	button->y = y;
 	button->w = w;
 	button->h = h;
 }
-void updateScore(Entity* score, bool hasScored) {
+
+/**
+ * This function updates the scorebar
+ * @param score the entity to be updated (score)
+ * @param hasScored parameter to check if it has scored or not
+ * @param sound the sound to be played
+ */
+void updateScore(Entity* score, bool hasScored, Mix_Chunk* sound) {
 	if (hasScored) {
 		// Moves the bar up
 		score->move(0, -SCORE);
@@ -32,9 +53,12 @@ void updateScore(Entity* score, bool hasScored) {
 			score->updateHeight(-SCORE);
 		}
 	}
+	Mix_PlayChannel(-1, sound, 0);
 }
 
-
+/**
+ * This function initializes all the resources necessary for the Game
+ */
 bool Manager::init() {
 	srand(time(NULL));
 
@@ -56,37 +80,42 @@ bool Manager::init() {
 	return true;
 }
 
-#pragma region Init Functions
-
-bool Manager::initSDL()
-{
+/**
+ * This function initializes SDL related resources
+ */
+bool Manager::initSDL() {
 	// Initialize SDL with all subsystems
 	if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-		SDL_Log("(SDL_INIT_EVERYTHING) Unable to initialize SDL: %s", SDL_GetError());
+		SDL_Log("(SDL_INIT_EVERYTHING) Unable to initialize SDL: %s\n", SDL_GetError());
 		return false;
 	}
 
 	// Create our window: title, x, y, w, h, flags
 	window = SDL_CreateWindow("Guitar Hero: A, S, W, D or arrows (F4 for debug mode)", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
 	if (window == NULL) {
-		SDL_Log("(SDL_CreateWindow) Unable to create window: %s", SDL_GetError());
+		SDL_Log("(SDL_CreateWindow) Unable to create window: %s\n", SDL_GetError());
 		return false;
 	}
 
 	// Create a 2D rendering context for a window: window, device index, flags
 	renderer = SDL_CreateRenderer(window, -1, 0);
 	if (renderer == NULL) {
-		SDL_Log("(SDL_CreateRenderer) Unable to create rendering context: %s", SDL_GetError());
+		SDL_Log("(SDL_CreateRenderer) Unable to create rendering context: %s\n", SDL_GetError());
 		return false;
 	}
 
 	return true;
 }
+
+/**
+ * This function initializes all sound related resources
+ */
 bool Manager::loadSounds() {
 	if (SDL_Init(SDL_INIT_AUDIO) == -1) {
 		SDL_Log("(SDL_INIT_AUDIO) Failed to load sounds: %s\n", SDL_GetError());
 		return false;
 	}
+
 	int flags = MIX_INIT_OGG;
 	int initted = Mix_Init(flags);
 	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
@@ -109,83 +138,97 @@ bool Manager::loadSounds() {
 
 	return true;
 }
+
+/**
+ * This function initializes all texture related resources
+ */
 bool Manager::loadTextures() {
 	int flags = IMG_INIT_JPG | IMG_INIT_PNG;
 	int initted = IMG_Init(flags);
 	if ((initted & flags) != flags) {
-		SDL_Log("IMG_Init: Failed to init required jpg and png support!\n");
-		SDL_Log("IMG_Init: %s\n", IMG_GetError());
+		SDL_Log("(IMG_Init) Failed to init required jpg and png support: %s\n", IMG_GetError());
 	}
 
 	left_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/left-arrow-framed.png"));
 	if (left_arrow_btn_img == NULL) {
-		SDL_Log("Couldn't load texture for left_arrow_btn_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for left_arrow_btn_img: %s\n", SDL_GetError());
 		return false;
 	}
 	left_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/left-arrow.png"));
 	if (left_arrow_beat_img == NULL) {
-		SDL_Log("Couldn't load texture for left_arrow_beat_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for left_arrow_beat_img: %s\n", SDL_GetError());
 		return false;
 	}
 
 	down_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/down-arrow-framed.png"));
 	if (down_arrow_btn_img == NULL) {
-		SDL_Log("Couldn't load texture for down_arrow_btn_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for down_arrow_btn_img: %s\n", SDL_GetError());
 		return false;
 	}
 	down_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/down-arrow.png"));
 	if (down_arrow_beat_img == NULL) {
-		SDL_Log("Couldn't load texture for down_arrow_beat_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for down_arrow_beat_img: %s\n", SDL_GetError());
 		return false;
 	}
 
 	up_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/up-arrow-framed.png"));
 	if (up_arrow_btn_img == NULL) {
-		SDL_Log("Couldn't load texture for up_arrow_btn_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for up_arrow_btn_img: %s\n", SDL_GetError());
 		return false;
 	}
 	up_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/up-arrow.png"));
 	if (up_arrow_beat_img == NULL) {
-		SDL_Log("Couldn't load texture for up_arrow_beat_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for up_arrow_beat_img: %s\n", SDL_GetError());
 		return false;
 	}
 
 	right_arrow_btn_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/right-arrow-framed.png"));
 	if (right_arrow_btn_img == NULL) {
-		SDL_Log("Couldn't load texture for right_arrow_btn_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for right_arrow_btn_img: %s\n", SDL_GetError());
 		return false;
 	}
 	right_arrow_beat_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/right-arrow.png"));
 	if (right_arrow_beat_img == NULL) {
-		SDL_Log("Couldn't load texture for right_arrow_beat_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for right_arrow_beat_img: %s\n", SDL_GetError());
 		return false;
 	}
 
 	background_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/bg.png"));
 	if (background_img == NULL) {
-		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
+		SDL_Log("(IMG_Load) Couldn't load texture for background_img: %s\n", SDL_GetError());
+		return false;
+	}
+
+	start_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/start.png"));
+	if (start_img == NULL) {
+		SDL_Log("(IMG_Load) Couldn't load texture for start_img: %s\n", SDL_GetError());
+		return false;
+	}
+	end_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/end.png"));
+	if (end_img == NULL) {
+		SDL_Log("(IMG_Load) Couldn't load texture for end_img: %s\n", SDL_GetError());
 		return false;
 	}
 
 	remainingScore_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/remainingScore.png"));
-	if (background_img == NULL) {
-		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
+	if (remainingScore_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s\n", SDL_GetError());
 		return false;
 	}
 
 	score_img = SDL_CreateTextureFromSurface(renderer, IMG_Load("img/score.png"));
-	if (background_img == NULL) {
-		SDL_Log("Couldn't load texture for background_img: %s", SDL_GetError());
+	if (score_img == NULL) {
+		SDL_Log("Couldn't load texture for background_img: %s\n", SDL_GetError());
 		return false;
 	}
 
-
-
-	// SDL_Surface* surface = IMG_Load("img/shot.png");
 	return true;
 }
-bool Manager::initVariables()
-{
+
+/**
+ * This function initializes all the necessary variables
+ */
+bool Manager::initVariables() {
 	Mix_PlayMusic(bgm, -1);
 
 	buttonA.init(BUTTON_X, BUTTON_Y, BUTTON_W, BUTTON_H, 0);
@@ -204,12 +247,14 @@ bool Manager::initVariables()
 	idx_beat = 0;
 	delayCounter = 0;
 	debugMode = false;
-
+	gameEnd = false;
+	gameStart = true;
 	return true;
 }
 
-#pragma endregion
-
+/**
+ * This function correctly releases the resources used in order to free the memory
+ */
 void Manager::release() {
 	SDL_DestroyTexture(background_img);
 	SDL_DestroyTexture(left_arrow_btn_img);
@@ -220,6 +265,9 @@ void Manager::release() {
 	SDL_DestroyTexture(up_arrow_beat_img);
 	SDL_DestroyTexture(right_arrow_btn_img);
 	SDL_DestroyTexture(right_arrow_beat_img);
+	SDL_DestroyTexture(remainingScore_img);
+	SDL_DestroyTexture(score_img);
+	SDL_DestroyTexture(start_img);
 	IMG_Quit();
 	Mix_FreeMusic(bgm);
 	Mix_FreeChunk(score_sfx);
@@ -229,6 +277,9 @@ void Manager::release() {
 	SDL_Quit();
 }
 
+/**
+ * This function controls user input
+ */
 bool Manager::input() {
 	SDL_Event event;
 	if (SDL_PollEvent(&event)) {
@@ -238,20 +289,17 @@ bool Manager::input() {
 	SDL_PumpEvents();
 	const Uint8* keyboard = SDL_GetKeyboardState(NULL);
 	for (int i = 0; i < MAX_KEYS; ++i) {
-		if (keyboard[i]) {
-			keys[i] = (keys[i] == KEY_IDLE) ? KEY_DOWN : KEY_REPEAT;
-		}
-		else {
-			keys[i] = (keys[i] == KEY_REPEAT || keys[i] == KEY_DOWN) ? KEY_UP : KEY_IDLE;
-		}
+		if (keyboard[i]) keys[i] = (keys[i] == KEY_IDLE) ? KEY_DOWN : KEY_REPEAT;
+		else keys[i] = (keys[i] == KEY_REPEAT || keys[i] == KEY_DOWN) ? KEY_UP : KEY_IDLE;
 	}
 
 	return true;
 }
 
+/**
+ * This function manages the events ocurring while playing
+ */
 bool Manager::update() {
-
-	#pragma region Input
 
 	// Read Input
 	if (!input()) return true;
@@ -259,13 +307,10 @@ bool Manager::update() {
 	// Exit the game
 	if (keys[SDL_SCANCODE_ESCAPE] == KEY_DOWN) return true;
 
-	//Enable debug mode
+	// Enables debug mode
 	if (keys[SDL_SCANCODE_F4] == KEY_DOWN) debugMode = !debugMode;
 
-#pragma endregion
-
-	#pragma region Logic
-
+	// Logic
 	// Beats update & input
 
 	delayCounter++;
@@ -274,7 +319,7 @@ bool Manager::update() {
 
 		int randCol = random(4, 1);
 
-		if (!beats[idx_beat].isAlive() && delayCounter >= DELAY) {
+		if (!beats[idx_beat].isAlive() && delayCounter >= SPAWN_DELAY) {
 			SDL_Rect button;
 			switch (randCol) {
 			case 1:
@@ -304,84 +349,94 @@ bool Manager::update() {
 			SDL_Rect button, beat;
 			beats[i].getRect(&beat.x, &beat.y, &beat.w, &beat.h);
 
-
+			// 'A' or 'LEFT KEY' control
 			if (keys[SDL_SCANCODE_A] == KEY_DOWN || keys[SDL_SCANCODE_LEFT] == KEY_DOWN) {
 				buttonA.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginA)) {
 					beats[i].shutDown();
-					updateScore(&score, false);
-
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
 
+			// 'S' or 'DOWN KEY' control
 			if (keys[SDL_SCANCODE_S] == KEY_DOWN || keys[SDL_SCANCODE_DOWN] == KEY_DOWN) {
 				buttonS.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginS)) {
 					beats[i].shutDown();
 
-					updateScore(&score, false);
-
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
 
+			// 'W' or 'UP KEY' control
 			if (keys[SDL_SCANCODE_W] == KEY_DOWN || keys[SDL_SCANCODE_UP] == KEY_DOWN) {
 				buttonW.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginW)) {
 					beats[i].shutDown();
-					updateScore(&score, false);
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
 
+			// 'D' or 'RIGHT KEY' control
 			if (keys[SDL_SCANCODE_D] == KEY_DOWN || keys[SDL_SCANCODE_RIGHT] == KEY_DOWN) {
 				buttonD.getRect(&button.x, &button.y, &button.w, &button.h);
 				if (SDL_HasIntersection(&beat, &error_marginD)) {
 					beats[i].shutDown();
-					updateScore(&score, false);
-					Mix_PlayChannel(-1, fail_sfx, 0);
+					updateScore(&score, false, fail_sfx);
 					break;
 				}
 			}
 
+			// Check if the beats intersect with the button
 			if (SDL_HasIntersection(&beat, &button)) {
 				beats[i].shutDown();
-				updateScore(&score, true);
-				Mix_PlayChannel(-1, score_sfx, 0);
+				updateScore(&score, true, score_sfx);
 				break;
 			}
 
+			// Check if beats are out of the window
 			if (beats[i].getY() >= WINDOW_HEIGHT) {
 				beats[i].shutDown();
-				updateScore(&score, false);
-				//Mix_PlayChannel(-1, fail_sfx, 0);
+				updateScore(&score, false, fail_sfx);
 			}
 		}
 	}
-	if (score.getY() <= remainingScore.getY()) return true;
-	
-#pragma endregion
+
+	// Closes the game whenever the score reaches the remainingScore
+	if (score.getY() <= remainingScore.getY()) {
+		gameEnd = true;
+		return true;
+	}
 
 	return false;
 }
 
+/**
+ * This function manages all drawing functions
+ */
 void Manager::draw() {
 	// Clears the renderer
 	SDL_RenderClear(renderer);
 
+	// Checks if the game has started
+	if (gameStart) {
+		SDL_RenderCopy(renderer, start_img, NULL, NULL);
+		SDL_RenderPresent(renderer);
+		SDL_Delay(2000);
+		gameStart = false;
+	}
+
 	// Draw background
 	SDL_RenderCopy(renderer, background_img, NULL, NULL);
-
+	
 	SDL_Rect rc;
 
-	if (debugMode == false)
-	{
+	if (!debugMode) {
 		// Draw buttons
-		
+
 		buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_RenderCopy(renderer, up_arrow_btn_img, NULL, &rc);
 
@@ -416,11 +471,8 @@ void Manager::draw() {
 			}
 		}
 	}
-
-	if (debugMode == true)
-	{
+	else {
 		// Draw buttons
-
 		buttonW.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 		SDL_SetRenderDrawColor(renderer, 50, 0, 0, 255);
 		SDL_RenderFillRect(renderer, &rc);
@@ -442,7 +494,7 @@ void Manager::draw() {
 		SDL_RenderCopy(renderer, right_arrow_btn_img, NULL, &rc);
 
 
-		//Drow error margins
+		// Draw error margins
 		SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
 		SDL_RenderFillRect(renderer, &error_marginW);
 		SDL_RenderFillRect(renderer, &error_marginA);
@@ -478,13 +530,22 @@ void Manager::draw() {
 		}
 	}
 
+	// Draw score bars
 	remainingScore.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 	SDL_RenderCopy(renderer, remainingScore_img, NULL, &rc);
 	score.getRect(&rc.x, &rc.y, &rc.w, &rc.h);
 	SDL_RenderCopy(renderer, score_img, NULL, &rc);
 
-
 	// Update screen
 	SDL_RenderPresent(renderer);
+
+	// Checks if the game is ended
+	if (gameEnd) {
+		SDL_RenderClear(renderer);
+		SDL_RenderCopy(renderer, end_img, NULL, NULL);
+		SDL_RenderPresent(renderer);
+		SDL_Delay(2000);
+	}
+
 	SDL_Delay(10);	// 1000/10 = 100 fps max
 }
