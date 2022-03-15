@@ -24,7 +24,7 @@
 #define SPRITE_H		48
 #define SPRITE_W		48
 #define SPRITE_Y_SPAWN  -SPRITE_H
-#define SPRITE_SPEED	4
+#define SPRITE_SPEED	10
 
 #define SPAWN_DELAY		20	
 #define SCREEN_DELAY	5000 // In ms

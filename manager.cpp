@@ -436,7 +436,6 @@ bool Manager::update() {
 	// Closes the game whenever the score reaches the remainingScore
 	if (score.getY() <= remainingScore.getY()) {
 		gameEnd = true;
-		return true;
 	}
 
 	return false;
@@ -578,8 +577,14 @@ void Manager::draw() {
 		SDL_Delay(SCREEN_DELAY);
 	}
 
-	
 	drawCharacter(&characterRect);
+
+	if (gameEnd) {
+		gameStart = true;
+		score.init(SCORE_X, SCORE_H, SCORE_W, SCORE_H, 1);
+
+		gameEnd = false;
+	}
 
 	// Update screen
 	SDL_RenderPresent(renderer);
